@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
@@ -109,25 +109,7 @@ export default function App() {
     const [passwords, setPasswords] = useState(DEFAULT_PASSWORDS);
     const [adminPassword, setAdminPassword] = useState("AdminPOPDA2026");
 
-    // --- EFEK PERMANEN: AMBIL PENGATURAN DARI CLOUD SAAT PERTAMA DIBUKA ---
-    useEffect(() => {
-        const fetchSettings = async () => {
-            if (!authUser) return;
-            try {
-                const settingsRef = doc(db, 'artifacts', DATABASE_ID, 'public', 'settings', 'app_config');
-                const docSnap = await getDoc(settingsRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.logos) setLogos(data.logos);
-                    if (data.bgImages) setBgImages(data.bgImages);
-                }
-            } catch (error) {
-                console.error("Gagal mengambil pengaturan permanen:", error);
-            }
-        };
-        fetchSettings();
-    }, [authUser]);
-
+    // --- INISIALISASI AUTH ---
     useEffect(() => {
         const initAuth = async () => {
             try {
@@ -148,23 +130,43 @@ export default function App() {
         return () => unsubscribe();
     }, []);
 
+    // --- EFEK PERMANEN: AMBIL PENGATURAN LOGO SECARA REALTIME ---
+    useEffect(() => {
+        if (!authUser) return;
+        // Alamat sudah dibenarkan menjadi 'settings', 'app_config'
+        const settingsRef = doc(db, 'settings', 'app_config');
+        const unsubscribeSettings = onSnapshot(settingsRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.logos) setLogos(data.logos);
+                if (data.bgImages) setBgImages(data.bgImages);
+            }
+        }, (error) => {
+            console.error("Gagal mengambil pengaturan permanen:", error);
+        });
+        
+        return () => unsubscribeSettings();
+    }, [authUser]);
+
+    // --- EFEK: AMBIL DATA PESERTA ---
     useEffect(() => {
         if (!authUser) return;
         const dataRef = collection(db, 'artifacts', DATABASE_ID, 'public', 'data', 'peserta');
-        const unsubscribe = onSnapshot(dataRef, (snapshot) => {
+        const unsubscribeData = onSnapshot(dataRef, (snapshot) => {
             const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             allData.sort((a, b) => b.timestamp - a.timestamp);
             setPesertaList(allData);
         }, (error) => {
             console.error("Firestore error:", error);
         });
-        return () => unsubscribe();
+        return () => unsubscribeData();
     }, [authUser]);
 
     // --- FUNGSI PRO: SIMPAN PENGATURAN LOGO/BG KE CLOUD SECARA PERMANEN ---
     const handleUpdateGlobalSettings = async (newData) => {
         if (!authUser) return;
         try {
+            // Alamat sudah dibenarkan menjadi 'settings', 'app_config'
             const settingsRef = doc(db, 'settings', 'app_config');
             await setDoc(settingsRef, newData, { merge: true });
         } catch (error) {

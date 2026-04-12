@@ -140,6 +140,9 @@ export default function App() {
                 const data = docSnap.data();
                 if (data.logos) setLogos(data.logos);
                 if (data.bgImages) setBgImages(data.bgImages);
+                // TAMBAHKAN DUA BARIS INI:
+                if (data.passwords) setPasswords(data.passwords);
+                if (data.adminPassword) setAdminPassword(data.adminPassword);
             }
         }, (error) => {
             console.error("Gagal mengambil pengaturan permanen:", error);
@@ -225,13 +228,38 @@ export default function App() {
         }
     };
 
-    const handleChangePassword = (regency, newPassword) => setPasswords(prev => ({ ...prev, [regency]: newPassword }));
-    const handleResetPassword = (regency) => setPasswords(prev => ({ ...prev, [regency]: DEFAULT_PASSWORDS[regency] }));
-    const handleResetAdminPassword = () => setAdminPassword("AdminPOPDA2026");
+    // --- UBAH BAGIAN INI ---
+    const handleChangePassword = (regency, newPassword) => {
+        // 1. Buat object password yang baru
+        const newPasswordsObj = { ...passwords, [regency]: newPassword };
+        
+        // 2. Update state lokal (agar layar langsung berubah)
+        setPasswords(newPasswordsObj);
+        
+        // 3. Simpan ke Firestore secara permanen
+        handleUpdateGlobalSettings({ passwords: newPasswordsObj });
+    };
+    // --- UBAH BAGIAN INI ---
+    const handleResetPassword = (regency) => {
+        const newPasswordsObj = { ...passwords, [regency]: DEFAULT_PASSWORDS[regency] };
+        setPasswords(newPasswordsObj);
+        handleUpdateGlobalSettings({ passwords: newPasswordsObj });
+    };
+    // --- FUNGSI BARU UNTUK SANDI ADMIN ---
+    const handleChangeAdminPassword = (newPass) => {
+        setAdminPassword(newPass);
+        handleUpdateGlobalSettings({ adminPassword: newPass });
+    };
+
+    const handleResetAdminPassword = () => {
+        const defaultAdminPass = "AdminPOPDA2026";
+        setAdminPassword(defaultAdminPass);
+        handleUpdateGlobalSettings({ adminPassword: defaultAdminPass });
+    };
 
     if (view === 'login') return <LoginScreen onLogin={handleLogin} passwords={passwords} adminPassword={adminPassword} onResetAdmin={handleResetAdminPassword} logos={logos} />;
     if (view === 'operator') return <OperatorDashboard user={currentUser} data={pesertaList} onLogout={handleLogout} onSave={handleSavePeserta} onDelete={handleDeletePeserta} onChangePassword={handleChangePassword} logos={logos} />;
-    if (view === 'admin') return <AdminDashboard data={pesertaList} onLogout={handleLogout} onUpdateStatus={handleUpdateStatus} onResetPassword={handleResetPassword} logos={logos} setLogos={setLogos} bgImages={bgImages} setBgImages={setBgImages} onChangeAdminPassword={setAdminPassword} passwords={passwords} onSyncSettings={handleUpdateGlobalSettings} />;
+    if (view === 'admin') return <AdminDashboard data={pesertaList} onLogout={handleLogout} onUpdateStatus={handleUpdateStatus} onResetPassword={handleResetPassword} logos={logos} setLogos={setLogos} bgImages={bgImages} setBgImages={setBgImages} onChangeAdminPassword={handleChangeAdminPassword} passwords={passwords} onSyncSettings={handleUpdateGlobalSettings} />;
     
     return null;
 }

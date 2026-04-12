@@ -165,7 +165,7 @@ export default function App() {
     const handleUpdateGlobalSettings = async (newData) => {
         if (!authUser) return;
         try {
-            const settingsRef = doc(db, 'artifacts', DATABASE_ID, 'public', 'settings', 'app_config');
+            const settingsRef = doc(db, 'settings', 'app_config');
             await setDoc(settingsRef, newData, { merge: true });
         } catch (error) {
             console.error("Gagal simpan pengaturan permanen:", error);

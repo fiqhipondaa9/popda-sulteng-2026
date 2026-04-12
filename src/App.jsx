@@ -288,8 +288,8 @@ function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos })
                 </div>
                 
                 <h2 className="text-xs md:text-sm font-bold text-indigo-400 tracking-[0.3em] mb-3">Pendaftaran</h2>
-                <h1 className="text-2xl sm:text-[28px] md:text-[32px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-cyan-800 tracking-tight leading-tight mb-1 whitespace-nowrap">POPDA XXIV TAHUN 2026</h1>
-                <p className="text-slate-600 text-sm sm:text-[15px] md:text-[17px] font-black tracking-[0.16em] mb-8 whitespace-nowrap">Provinsi Sulawesi Tengah</p>
+                <h1 className="text-2xl sm:text-[28px] md:text-[32px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-cyan-800 tracking-tight leading-tight mb-1 whitespace-nowrap">POPDA XXIV SULTENG NAMBASO</h1>
+                <p className="text-slate-600 text-sm sm:text-[15px] md:text-[17px] font-black tracking-[0.16em] mb-8 whitespace-nowrap">TAHUN 2026</p>
                 
                 <div className="space-y-5">
                     {showAdmin && (
@@ -776,7 +776,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                                     </div>
                                     <div className="lg:col-span-2 md:col-span-1">
                                         <label className={labelClasses}><span>BPJS Ketenagakerjaan</span></label>
-                                        <input type="text" name="bpjsTk" value={formData.bpjsTk} onChange={handleChange} readOnly={isReadOnly} className={`${inputClasses} font-mono`} placeholder="Nomor KPJ (Opsional)" />
+                                        <input type="text" name="bpjsTk" value={formData.bpjsTk} onChange={handleChange} readOnly={isReadOnly} className={`${inputClasses} font-mono`} placeholder="Contoh 0001234567890" />
                                     </div>
                                 </div>
                             </div>
@@ -803,7 +803,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                                 <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">C</div>
                                 <div className="flex-1 flex justify-between items-end">
                                     <h3 className="font-bold text-slate-800 text-lg uppercase tracking-wide">Unggah Dokumen Berkas</h3>
-                                    <div className="text-right"><span className="block text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1 rounded-full mb-1 tracking-wider">{isReadOnly ? 'Mode Lihat Saja' : 'Maks 2MB / File'}</span></div>
+                                    <div className="text-right"><span className="block text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1 rounded-full mb-1 tracking-wider">{isReadOnly ? 'Mode Lihat Saja' : 'Pdf Maks 1MB / File'}</span></div>
                                 </div>
                             </div>
                             

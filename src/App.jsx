@@ -288,8 +288,8 @@ function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos })
                 </div>
                 
                 <h2 className="text-xs md:text-sm font-bold text-indigo-400 tracking-[0.3em] mb-3">Pendaftaran</h2>
-                <h1 className="text-2xl sm:text-[28px] md:text-[32px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-cyan-800 tracking-tight leading-tight mb-1 whitespace-nowrap">POPDA XXIV SULTENG NAMBASO</h1>
-                <p className="text-slate-600 text-sm sm:text-[15px] md:text-[17px] font-black tracking-[0.16em] mb-8 whitespace-nowrap">TAHUN 2026</p>
+                <h1 className="text-2xl sm:text-[28px] md:text-[32px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-cyan-800 tracking-tight leading-tight mb-1 whitespace-nowrap">POPDA XXIV 2026 BUOL</h1>
+                <p className="text-slate-600 text-sm sm:text-[15px] md:text-[17px] font-black tracking-[0.16em] mb-8 whitespace-nowrap">SULTENG NAMBASO</p>
                 
                 <div className="space-y-5">
                     {showAdmin && (

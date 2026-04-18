@@ -54,9 +54,9 @@ const calculateAge = (dateString) => {
 };
 
 const InfoRow = ({ label, children, isMono }) => (
-    <div className="grid grid-cols-3 gap-2 py-2 border-b border-slate-100 last:border-0 items-center">
-        <div className="col-span-1 text-[11px] font-bold text-slate-500 uppercase tracking-wide">{label}</div>
-        <div className={`col-span-2 text-sm font-semibold text-slate-800 ${isMono ? 'font-mono' : ''}`}>{children || '-'}</div>
+    <div className="grid grid-cols-3 gap-2 py-2 border-b border-white/5 last:border-0 items-center">
+        <div className="col-span-1 text-[11px] font-bold text-slate-400 uppercase tracking-wide">{label}</div>
+        <div className={`col-span-2 text-sm font-semibold text-white ${isMono ? 'font-mono text-blue-300' : ''}`}>{children || '-'}</div>
     </div>
 );
 
@@ -133,14 +133,12 @@ export default function App() {
     // --- EFEK PERMANEN: AMBIL PENGATURAN LOGO SECARA REALTIME ---
     useEffect(() => {
         if (!authUser) return;
-        // Alamat sudah dibenarkan menjadi 'settings', 'app_config'
         const settingsRef = doc(db, 'settings', 'app_config');
         const unsubscribeSettings = onSnapshot(settingsRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (data.logos) setLogos(data.logos);
                 if (data.bgImages) setBgImages(data.bgImages);
-                // TAMBAHKAN DUA BARIS INI:
                 if (data.passwords) setPasswords(data.passwords);
                 if (data.adminPassword) setAdminPassword(data.adminPassword);
             }
@@ -169,7 +167,6 @@ export default function App() {
     const handleUpdateGlobalSettings = async (newData) => {
         if (!authUser) return;
         try {
-            // Alamat sudah dibenarkan menjadi 'settings', 'app_config'
             const settingsRef = doc(db, 'settings', 'app_config');
             await setDoc(settingsRef, newData, { merge: true });
         } catch (error) {
@@ -228,24 +225,18 @@ export default function App() {
         }
     };
 
-    // --- UBAH BAGIAN INI ---
     const handleChangePassword = (regency, newPassword) => {
-        // 1. Buat object password yang baru
         const newPasswordsObj = { ...passwords, [regency]: newPassword };
-        
-        // 2. Update state lokal (agar layar langsung berubah)
         setPasswords(newPasswordsObj);
-        
-        // 3. Simpan ke Firestore secara permanen
         handleUpdateGlobalSettings({ passwords: newPasswordsObj });
     };
-    // --- UBAH BAGIAN INI ---
+
     const handleResetPassword = (regency) => {
         const newPasswordsObj = { ...passwords, [regency]: DEFAULT_PASSWORDS[regency] };
         setPasswords(newPasswordsObj);
         handleUpdateGlobalSettings({ passwords: newPasswordsObj });
     };
-    // --- FUNGSI BARU UNTUK SANDI ADMIN ---
+
     const handleChangeAdminPassword = (newPass) => {
         setAdminPassword(newPass);
         handleUpdateGlobalSettings({ adminPassword: newPass });
@@ -265,7 +256,7 @@ export default function App() {
 }
 
 // ==========================================
-// VIEW 1: LOGIN SCREEN
+// VIEW 1: LOGIN SCREEN (GLASSMORPHISM)
 // ==========================================
 function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos }) {
     const [secretClick, setSecretClick] = useState(0);
@@ -305,31 +296,31 @@ function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos })
     };
 
     return (
-        <div className="min-h-screen uppercase bg-gradient-to-br from-indigo-950 via-blue-900 to-cyan-900 flex items-center justify-center p-4 relative overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-pulse"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="min-h-screen uppercase bg-[#020617] flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 blur-[120px] rounded-full"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full" style={{ animationDelay: '2s' }}></div>
 
-            <div className="bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl w-full max-w-[540px] p-8 md:p-10 text-center border border-white/20 relative z-10 transform transition-all">
+            <div className="bg-white/5 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl w-full max-w-[540px] p-8 md:p-10 text-center border border-white/10 relative z-10 transform transition-all">
                 <div className="flex justify-center items-center gap-6 mb-6 h-20 cursor-pointer" onClick={handleLogoClick}>
-                    {logos[0] ? <img src={logos[0]} alt="Logo 1" className="h-full w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform" /> : (!logos[1] && <div className="h-16 w-16 bg-gradient-to-tr from-indigo-600 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg"><ShieldIcon className="w-8 h-8 text-white" /></div>)}
+                    {logos[0] ? <img src={logos[0]} alt="Logo 1" className="h-full w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform" /> : (!logos[1] && <div className="h-16 w-16 bg-blue-500/20 border border-blue-500/30 rounded-2xl flex items-center justify-center shadow-lg"><ShieldIcon className="w-8 h-8 text-blue-400" /></div>)}
                     {logos[1] && <img src={logos[1]} alt="Logo 2" className="h-full w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform" />}
                 </div>
                 
-                <h2 className="text-xs md:text-sm font-bold text-indigo-400 tracking-[0.3em] mb-3">Pendaftaran</h2>
-                <h1 className="text-2xl sm:text-[28px] md:text-[32px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-cyan-800 tracking-tight leading-tight mb-1 whitespace-nowrap">POPDA XXIV 2026 BUOL</h1>
-                <p className="text-slate-600 text-sm sm:text-[15px] md:text-[17px] font-black tracking-[0.16em] mb-8 whitespace-nowrap">SULTENG NAMBASO</p>
+                <h2 className="text-xs md:text-sm font-bold text-blue-400 tracking-[0.3em] mb-3">Pendaftaran</h2>
+                <h1 className="text-2xl sm:text-[28px] md:text-[32px] font-black text-white tracking-tight leading-tight mb-1 whitespace-nowrap">POPDA XXIV 2026 BUOL</h1>
+                <p className="text-slate-400 text-sm sm:text-[15px] md:text-[17px] font-black tracking-[0.16em] mb-8 whitespace-nowrap">SULTENG NAMBASO</p>
                 
                 <div className="space-y-5">
                     {showAdmin && (
-                        <div className="animate-in fade-in slide-in-from-top-4 duration-500 bg-slate-900 p-5 rounded-2xl mb-4 border border-amber-500/30 shadow-inner text-left">
+                        <div className="animate-in fade-in slide-in-from-top-4 duration-500 bg-black/40 p-5 rounded-2xl mb-4 border border-amber-500/30 shadow-inner text-left backdrop-blur-md">
                             {isRecovering ? (
                                 <div className="animate-in fade-in">
                                     <label className="block text-xs font-bold text-teal-400 mb-2 tracking-wide">Pemulihan Sandi Admin</label>
                                     <p className="text-[10px] text-slate-400 mb-3 leading-relaxed normal-case">Masukkan Kode Master Rahasia (Developer Key) untuk mengembalikan sandi ke pengaturan pabrik.</p>
-                                    <input type="password" value={recoveryKey} onChange={(e) => { setRecoveryKey(e.target.value); setRecoveryMessage(''); }} placeholder="Kode pemulihan..." className="w-full normal-case p-3.5 border border-slate-700 rounded-xl focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 bg-slate-800 text-white text-sm mb-3 outline-none transition-all" />
+                                    <input type="password" value={recoveryKey} onChange={(e) => { setRecoveryKey(e.target.value); setRecoveryMessage(''); }} placeholder="Kode pemulihan..." className="w-full normal-case p-3.5 border border-white/10 rounded-xl focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 bg-white/5 text-white text-sm mb-3 outline-none transition-all" />
                                     {recoveryMessage && <p className={`text-xs font-bold mb-3 ${recoveryMessage.includes('Berhasil') ? 'text-teal-400' : 'text-rose-400'}`}>{recoveryMessage}</p>}
                                     <div className="flex gap-2">
-                                        <button onClick={() => setIsRecovering(false)} className="px-4 py-3 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl font-bold transition-all text-xs">Batal</button>
+                                        <button onClick={() => setIsRecovering(false)} className="px-4 py-3 bg-white/5 text-slate-300 hover:bg-white/10 rounded-xl font-bold transition-all text-xs border border-white/10">Batal</button>
                                         <button onClick={handleRecoverySubmit} className="flex-1 bg-teal-600 hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">Validasi Kode</button>
                                     </div>
                                 </div>
@@ -339,29 +330,29 @@ function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos })
                                         <label className="block text-xs font-bold text-amber-400 tracking-wide">Sandi Admin Provinsi</label>
                                         <button onClick={() => setIsRecovering(true)} className="text-[10px] font-bold text-slate-400 hover:text-amber-400 transition-colors cursor-pointer">Lupa Sandi?</button>
                                     </div>
-                                    <input type="password" value={adminPasswordInput} onChange={(e) => { setAdminPasswordInput(e.target.value); setLoginError(''); }} placeholder="Masukkan sandi admin..." className="w-full normal-case p-3.5 border border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 bg-slate-800 text-white text-sm mb-3 outline-none transition-all" />
-                                    <button onClick={handleAdminLogin} disabled={!adminPasswordInput} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <input type="password" value={adminPasswordInput} onChange={(e) => { setAdminPasswordInput(e.target.value); setLoginError(''); }} placeholder="Masukkan sandi admin..." className="w-full normal-case p-3.5 border border-white/10 rounded-xl focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 bg-white/5 text-white text-sm mb-3 outline-none transition-all" />
+                                    <button onClick={handleAdminLogin} disabled={!adminPasswordInput} className="w-full bg-amber-500/20 border border-amber-500/50 hover:bg-amber-500/40 text-amber-300 font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                                         <ShieldIcon className="w-5 h-5" /> Masuk sebagai Admin Provinsi
                                     </button>
                                 </>
                             )}
                             <div className="relative py-4 mt-2">
-                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-700"></div></div>
-                                <div className="relative flex justify-center text-xs font-bold tracking-wider"><span className="px-3 bg-slate-900 text-slate-500">Atau Akses Operator</span></div>
+                                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                                <div className="relative flex justify-center text-xs font-bold tracking-wider"><span className="px-3 bg-[#0a1122] text-slate-500 rounded-full border border-white/5">Atau Akses Operator</span></div>
                             </div>
                         </div>
                     )}
 
-                    <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 text-left">
-                        <label className="block text-xs font-bold text-slate-600 mb-2 tracking-wide">Pilih Wilayah Operasional</label>
-                        <select value={selectedRegency} onChange={(e) => { setSelectedRegency(e.target.value); setLoginError(''); }} className="w-full p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 mb-4 bg-white text-sm shadow-sm transition-all outline-none font-medium uppercase">
+                    <div className="bg-white/5 backdrop-blur-md p-5 rounded-[2rem] border border-white/10 text-left shadow-lg">
+                        <label className="block text-xs font-bold text-slate-400 mb-2 tracking-wide pl-1">Pilih Wilayah Operasional</label>
+                        <select value={selectedRegency} onChange={(e) => { setSelectedRegency(e.target.value); setLoginError(''); }} className="w-full p-4 border border-white/10 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 mb-4 bg-[#0a1122] text-white text-sm shadow-sm transition-all outline-none font-bold uppercase appearance-none cursor-pointer">
                             <option value="" disabled>-- Pilih Kabupaten/Kota --</option>
                             {REGIONS.filter(r => r !== 'Semua Wilayah').map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
-                        <label className="block text-xs font-bold text-slate-600 mb-2 tracking-wide">Kata Sandi (Password)</label>
-                        <input type="password" value={passwordInput} onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} placeholder="Masukkan kata sandi unit daerah..." className={`w-full normal-case p-3.5 border rounded-xl focus:ring-2 outline-none mb-2 bg-white text-sm shadow-sm transition-all font-medium ${loginError ? 'border-rose-300 focus:ring-rose-500/50' : 'border-slate-200 focus:ring-indigo-500/50 focus:border-indigo-500'}`} />
-                        {loginError && <p className="text-rose-500 text-xs font-bold mb-3 flex items-center gap-1"><AlertCircleIcon className="w-3 h-3"/> {loginError}</p>}
-                        <button onClick={handleOperatorLogin} disabled={!selectedRegency} className={`w-full font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all mt-4 flex items-center justify-center gap-2 ${selectedRegency ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white hover:shadow-indigo-500/30 hover:-translate-y-0.5' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
+                        <label className="block text-xs font-bold text-slate-400 mb-2 tracking-wide pl-1">Kata Sandi (Password)</label>
+                        <input type="password" value={passwordInput} onChange={(e) => { setPasswordInput(e.target.value); setLoginError(''); }} placeholder="Masukkan kata sandi unit daerah..." className={`w-full normal-case p-4 border rounded-2xl focus:ring-4 outline-none mb-2 bg-[#0a1122] text-white text-sm shadow-sm transition-all font-medium ${loginError ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-white/10 focus:ring-blue-500/20 focus:border-blue-500'}`} />
+                        {loginError && <p className="text-rose-400 text-xs font-bold mb-3 flex items-center gap-1 pl-1"><AlertCircleIcon className="w-3 h-3"/> {loginError}</p>}
+                        <button onClick={handleOperatorLogin} disabled={!selectedRegency} className={`w-full font-bold py-4 px-4 rounded-2xl shadow-lg transition-all mt-4 flex items-center justify-center gap-2 ${selectedRegency ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 hover:-translate-y-1' : 'bg-white/5 border border-white/5 text-slate-500 cursor-not-allowed'}`}>
                             <UsersIcon className="w-5 h-5" /> Masuk Dashboard
                         </button>
                     </div>
@@ -372,7 +363,7 @@ function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos })
 }
 
 // ==========================================
-// VIEW 2: OPERATOR DASHBOARD
+// VIEW 2: OPERATOR DASHBOARD (BENTO GLASS)
 // ==========================================
 function OperatorDashboard({ user, data, onLogout, onSave, onDelete, onChangePassword, logos }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -415,17 +406,22 @@ function OperatorDashboard({ user, data, onLogout, onSave, onDelete, onChangePas
     };
 
     return (
-        <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-800 uppercase">
-            <aside className="w-72 bg-gradient-to-b from-indigo-950 via-indigo-900 to-slate-900 text-white flex flex-col shadow-2xl z-20">
+        <div className="flex h-screen bg-[#020617] overflow-hidden font-sans text-slate-200 uppercase relative">
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-900/20 blur-[120px] rounded-full"></div>
+                <div className="absolute bottom-[0%] left-[-5%] w-[30%] h-[30%] bg-indigo-900/20 blur-[100px] rounded-full"></div>
+            </div>
+
+            <aside className="w-72 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col shadow-2xl z-20 relative">
                 <div className="p-8 border-b border-white/10 text-center">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-white/5 p-2">
-                        {logos[0] ? <img src={logos[0]} alt="Logo" className="w-full h-full object-contain drop-shadow-lg" /> : <ShieldIcon className="w-8 h-8 text-cyan-400" />}
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-blue-500/10 p-2 border border-blue-500/20 shadow-lg">
+                        {logos[0] ? <img src={logos[0]} alt="Logo" className="w-full h-full object-contain drop-shadow-lg" /> : <ShieldIcon className="w-8 h-8 text-blue-400" />}
                     </div>
                     <h2 className="font-extrabold text-xl tracking-tight text-white whitespace-nowrap">POPDA XXIV</h2>
-                    <p className="text-cyan-400 text-[10px] font-bold tracking-widest mt-1 opacity-80">Operator {user.regency}</p>
+                    <p className="text-blue-400 text-[10px] font-bold tracking-widest mt-1 opacity-80">Operator {user.regency}</p>
                 </div>
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                    <button className="w-full flex items-center gap-3 px-4 py-3.5 bg-white/10 text-cyan-50 rounded-xl font-semibold border-l-4 border-cyan-400 shadow-sm transition-all"><UsersIcon className="w-5 h-5 opacity-80" /> Data Peserta</button>
+                    <button className="w-full flex items-center gap-3 px-4 py-3.5 bg-blue-500/20 text-blue-100 rounded-xl font-semibold border border-blue-500/30 shadow-sm transition-all"><UsersIcon className="w-5 h-5 opacity-80 text-blue-400" /> Data Peserta</button>
                     <button onClick={() => setIsPasswordModalOpen(true)} className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-all"><ShieldIcon className="w-5 h-5 opacity-80" /> Keamanan Akun</button>
                 </nav>
                 <div className="p-4 border-t border-white/10">
@@ -433,24 +429,23 @@ function OperatorDashboard({ user, data, onLogout, onSave, onDelete, onChangePas
                 </div>
             </aside>
 
-            <main className="flex-1 flex flex-col overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-indigo-50 to-transparent pointer-events-none z-0"></div>
-                <header className="bg-white/80 backdrop-blur-md p-6 border-b border-slate-200/60 flex justify-between items-center z-10 sticky top-0 shadow-sm">
+            <main className="flex-1 flex flex-col overflow-hidden relative z-10">
+                <header className="bg-white/5 backdrop-blur-md p-6 border-b border-white/10 flex justify-between items-center z-10 sticky top-0 shadow-sm">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Kontingen</h1>
-                        <p className="text-slate-500 text-sm font-medium mt-0.5 normal-case">Kelola dan tinjau pendaftaran dari wilayah Anda.</p>
+                        <h1 className="text-2xl font-bold text-white tracking-tight">Manajemen Kontingen</h1>
+                        <p className="text-slate-400 text-sm font-medium mt-0.5 normal-case">Kelola dan tinjau pendaftaran dari wilayah Anda.</p>
                     </div>
-                    <button onClick={openAddForm} className="bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all hover:-translate-y-0.5"><PlusIcon className="w-5 h-5" /> Tambah Peserta</button>
+                    <button onClick={openAddForm} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2 transition-all hover:-translate-y-0.5"><PlusIcon className="w-5 h-5" /> Tambah Peserta</button>
                 </header>
 
-                <div className="p-6 md:p-8 overflow-y-auto flex-1 z-10 flex flex-col">
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 p-5 md:p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 shrink-0">
+                <div className="p-6 md:p-8 overflow-y-auto flex-1 flex flex-col">
+                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white/10 p-6 md:p-8 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 shrink-0">
                         <div className="flex-1 w-full">
-                            <div className="flex justify-between text-sm font-bold mb-3"><span className="text-slate-700">Kesiapan Berkas ({user.regency})</span><span className="text-emerald-600">{progressPercentage}% Selesai Diverifikasi</span></div>
-                            <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden shadow-inner"><div className="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${progressPercentage}%` }}></div></div>
+                            <div className="flex justify-between text-sm font-bold mb-3"><span className="text-slate-400">Kesiapan Berkas ({user.regency})</span><span className="text-emerald-400">{progressPercentage}% Selesai Diverifikasi</span></div>
+                            <div className="w-full bg-white/10 rounded-full h-3.5 overflow-hidden shadow-inner border border-white/5"><div className="bg-emerald-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${progressPercentage}%` }}></div></div>
                         </div>
-                        <div className="text-xs text-slate-500 font-bold bg-slate-50 px-5 py-3 rounded-xl border border-slate-100 text-center min-w-[140px] shadow-sm">
-                            <span className="text-lg text-slate-800 block mb-0.5">{approved} / {total}</span> Atlet Siap Tanding
+                        <div className="text-xs text-slate-400 font-bold bg-black/20 px-6 py-4 rounded-2xl border border-white/5 text-center min-w-[160px] shadow-sm">
+                            <span className="text-2xl text-white block mb-0.5">{approved} / {total}</span> Atlet Siap Tanding
                         </div>
                     </div>
 
@@ -460,59 +455,59 @@ function OperatorDashboard({ user, data, onLogout, onSave, onDelete, onChangePas
                         <StatCard title="Butuh Revisi" value={revision} type="danger" />
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/60 flex-1 flex flex-col overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 flex flex-wrap gap-4 bg-slate-50/50 shrink-0 justify-between items-center">
+                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/10 flex-1 flex flex-col overflow-hidden">
+                        <div className="p-6 border-b border-white/10 flex flex-wrap gap-4 bg-transparent shrink-0 justify-between items-center">
                             <div className="flex gap-4 flex-wrap flex-1 items-center">
                                 <div className="relative flex-1 min-w-[250px] max-w-sm">
-                                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"/>
-                                    <input type="text" placeholder="Cari Nama, NIK, atau ID Reg..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full normal-case pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/30 outline-none shadow-sm transition-all" />
+                                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5"/>
+                                    <input type="text" placeholder="Cari Nama, NIK, atau ID Reg..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full normal-case pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-sm transition-all" />
                                 </div>
-                                <select value={filterCabor} onChange={(e) => setFilterCabor(e.target.value)} className="min-w-[200px] p-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500/30 outline-none shadow-sm">
-                                    {CABOR_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                                <select value={filterCabor} onChange={(e) => setFilterCabor(e.target.value)} className="min-w-[200px] p-3 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-slate-300 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-sm appearance-none cursor-pointer">
+                                    {CABOR_LIST.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
                                 </select>
                             </div>
-                            <button onClick={handleExportCSV} className="px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-all hover:-translate-y-0.5 whitespace-nowrap text-sm"><FileTextIcon className="w-4 h-4"/> Export CSV</button>
+                            <button onClick={handleExportCSV} className="px-6 py-3 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 rounded-xl font-bold flex items-center gap-2 shadow-sm transition-all hover:-translate-y-0.5 whitespace-nowrap text-sm"><FileTextIcon className="w-4 h-4"/> Export CSV</button>
                         </div>
 
-                        <div className="overflow-y-auto flex-1">
+                        <div className="overflow-y-auto flex-1 p-2">
                             <table className="w-full text-left text-sm">
-                                <thead className="bg-white text-slate-500 text-[10px] tracking-wider border-b border-slate-200 sticky top-0 z-10">
+                                <thead className="text-slate-400 text-[10px] tracking-widest border-b border-white/10 sticky top-0 z-10 bg-[#020617]/80 backdrop-blur-md">
                                     <tr>
-                                        <th className="px-6 py-5 font-bold">Nama Lengkap & NIK</th>
-                                        <th className="px-6 py-5 font-bold">Kategori & Cabor</th>
-                                        <th className="px-6 py-5 font-bold">Status Berkas</th>
-                                        <th className="px-6 py-5 font-bold text-right">Tindakan</th>
+                                        <th className="px-6 py-5 font-bold uppercase">Nama Lengkap & NIK</th>
+                                        <th className="px-6 py-5 font-bold uppercase">Kategori & Cabor</th>
+                                        <th className="px-6 py-5 font-bold uppercase">Status Berkas</th>
+                                        <th className="px-6 py-5 font-bold text-right uppercase">Tindakan</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-white/5">
                                     {filteredData.length === 0 ? (
-                                        <tr><td colSpan="4" className="text-center py-16 text-slate-400 font-medium bg-slate-50/30 normal-case">Tidak ada data peserta yang ditemukan.</td></tr>
+                                        <tr><td colSpan="4" className="text-center py-16 text-slate-500 font-medium normal-case">Tidak ada data peserta yang ditemukan.</td></tr>
                                     ) : (
                                         filteredData.map(p => (
-                                            <tr key={p.id} className="hover:bg-indigo-50/50 transition-colors group">
-                                                <td className="px-6 py-4">
-                                                    <div className="font-bold text-slate-800 uppercase">{p.nama}</div>
-                                                    <div className="flex items-center gap-2 mt-1">
+                                            <tr key={p.id} className="hover:bg-white/5 transition-colors group">
+                                                <td className="px-6 py-5">
+                                                    <div className="font-bold text-white uppercase">{p.nama}</div>
+                                                    <div className="flex items-center gap-2 mt-2">
                                                         <span className="text-xs text-slate-500 font-mono opacity-80" title="NIK">{p.nik || 'N/A'}</span>
-                                                        {p.id_registrasi && <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{p.id_registrasi}</span>}
+                                                        {p.id_registrasi && <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">{p.id_registrasi}</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4"><div className="font-semibold text-slate-700 uppercase">{p.kategori}</div><div className="text-xs text-slate-500 mt-1 uppercase">{p.cabor}</div></td>
-                                                <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-80 sm:group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => { setPesertaToEdit(p); setIsModalOpen(true); }} className={`px-3 py-2 text-xs font-bold rounded-lg border transition-all flex items-center gap-1.5 ${p.status === 'Approved' ? 'text-slate-600 bg-white hover:bg-slate-100 border-slate-200 hover:border-slate-300 shadow-sm' : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200 hover:border-indigo-300 shadow-sm hover:-translate-y-0.5'}`} title={p.status === 'Approved' ? 'Lihat Detail' : 'Perbaiki Data'}>
+                                                <td className="px-6 py-5"><div className="font-semibold text-slate-300 uppercase">{p.kategori}</div><div className="text-xs text-slate-500 mt-1 uppercase">{p.cabor}</div></td>
+                                                <td className="px-6 py-5"><StatusBadge status={p.status} /></td>
+                                                <td className="px-6 py-5 text-right">
+                                                    <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => { setPesertaToEdit(p); setIsModalOpen(true); }} className={`px-4 py-2.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 shadow-sm ${p.status === 'Approved' ? 'text-slate-400 bg-white/5 hover:bg-white/10 border-white/10' : 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/20 hover:-translate-y-0.5'}`} title={p.status === 'Approved' ? 'Lihat Detail' : 'Perbaiki Data'}>
                                                             {p.status === 'Approved' ? <EyeIcon className="w-4 h-4"/> : <EditIcon className="w-4 h-4"/>}
                                                             <span className="hidden sm:inline">{p.status === 'Approved' ? 'DETAIL' : 'PERBAIKI'}</span>
                                                         </button>
                                                         {p.status !== 'Approved' && (
                                                             deleteConfirmId === p.id ? (
                                                                 <div className="flex items-center gap-1 animate-in zoom-in-95">
-                                                                    <button onClick={() => { onDelete(p.id); setDeleteConfirmId(null); }} className="px-2 py-1.5 text-[10px] bg-rose-500 hover:bg-rose-600 text-white rounded font-bold transition">HAPUS?</button>
-                                                                    <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1.5 text-[10px] bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-bold transition">BATAL</button>
+                                                                    <button onClick={() => { onDelete(p.id); setDeleteConfirmId(null); }} className="px-3 py-2 text-[10px] bg-rose-500 hover:bg-rose-600 text-white rounded-lg font-bold transition shadow-sm">HAPUS?</button>
+                                                                    <button onClick={() => setDeleteConfirmId(null)} className="px-3 py-2 text-[10px] bg-white/10 hover:bg-white/20 text-slate-300 rounded-lg font-bold transition border border-white/10">BATAL</button>
                                                                 </div>
                                                             ) : (
-                                                                <button onClick={() => setDeleteConfirmId(p.id)} className="p-2 text-rose-500 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-lg shadow-sm transition-all hover:-translate-y-0.5" title="Hapus Data"><TrashIcon className="w-4 h-4"/></button>
+                                                                <button onClick={() => setDeleteConfirmId(p.id)} className="p-2.5 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl shadow-sm transition-all hover:-translate-y-0.5" title="Hapus Data"><TrashIcon className="w-4 h-4"/></button>
                                                             )
                                                         )}
                                                     </div>
@@ -537,16 +532,22 @@ function ChangePasswordModal({ regency, onClose, onChangePassword }) {
     const [msg, setMsg] = useState('');
     const handleSubmit = (e) => { e.preventDefault(); if(!newPassword) return; onChangePassword(regency, newPassword); setMsg("Berhasil diubah!"); setTimeout(() => onClose(), 1500); };
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 uppercase">
-            <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform transition-all scale-100">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-indigo-900 to-cyan-800 text-white">
-                    <h2 className="font-bold text-lg tracking-wide">Keamanan Akun</h2>
-                    <button onClick={onClose} className="text-white/60 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-full"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 uppercase">
+            <div className="bg-[#0a1526] rounded-[2rem] w-full max-w-sm shadow-2xl overflow-hidden transform transition-all scale-100 border border-white/10">
+                <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5 text-white">
+                    <h2 className="font-bold text-lg tracking-wide text-blue-400">Keamanan Akun</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-slate-50/50">
-                    <div><label className="block text-xs font-bold text-slate-600 mb-2 tracking-wide">Password Baru</label><input type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="w-full normal-case p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 font-medium outline-none shadow-sm transition-all" placeholder="Ketik password baru..." /></div>
-                    {msg && <p className="text-emerald-500 text-xs font-bold">{msg}</p>}
-                    <div className="pt-2 flex justify-end gap-3"><button type="button" onClick={onClose} className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors text-sm tracking-wide uppercase">Batal</button><button type="submit" className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-0.5 text-sm tracking-wide uppercase">Update</button></div>
+                <form onSubmit={handleSubmit} className="p-8 space-y-5 bg-transparent">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-2 tracking-wide">Password Baru</label>
+                        <input type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="w-full normal-case p-4 bg-white/5 border border-white/10 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 font-medium outline-none shadow-sm transition-all text-white" placeholder="Ketik password baru..." />
+                    </div>
+                    {msg && <p className="text-emerald-400 text-xs font-bold">{msg}</p>}
+                    <div className="pt-4 flex justify-end gap-3">
+                        <button type="button" onClick={onClose} className="px-6 py-3 text-slate-400 font-bold hover:bg-white/5 border border-transparent hover:border-white/10 rounded-xl transition-all text-sm tracking-wide uppercase">Batal</button>
+                        <button type="submit" className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 text-sm tracking-wide uppercase">Update</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -657,81 +658,82 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
         setTimeout(() => { onSave({ ...formData, regency }); setIsSaving(false); onClose(); }, 500);
     };
 
-    const inputClasses = `w-full p-3.5 border rounded-xl outline-none transition-all text-sm shadow-sm ${isReadOnly ? 'bg-slate-100 border-slate-200 text-slate-600' : 'bg-white border-slate-200 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 hover:border-slate-300'}`;
-    const labelClasses = "block text-[11px] font-bold text-slate-500 mb-1.5 tracking-wide flex justify-between";
+    const inputClasses = `w-full p-4 bg-white/5 backdrop-blur-md rounded-xl outline-none transition-all text-sm shadow-sm ${isReadOnly ? 'border-white/5 text-slate-500 cursor-not-allowed' : 'border-white/10 text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 hover:border-white/20 appearance-none'}`;
+    const labelClasses = "block text-[11px] font-bold text-slate-400 mb-2 tracking-widest uppercase flex justify-between";
     const getCounterColor = (current, target) => {
-        if (!current) return 'text-slate-400';
-        return current.toString().length === target ? 'text-emerald-500' : 'text-rose-500';
+        if (!current) return 'text-slate-500';
+        return current.toString().length === target ? 'text-emerald-400' : 'text-rose-400';
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in duration-200 uppercase">
-            <div className="bg-slate-50 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-white/20">
-                <div className="p-6 bg-gradient-to-r from-indigo-900 to-cyan-800 text-white flex justify-between items-center shrink-0 shadow-md relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-                    <div className="relative z-10 flex items-center gap-4">
-                        <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm hidden sm:block"><IdCardIcon className="w-6 h-6 text-cyan-300" /></div>
+        <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in duration-200 uppercase">
+            <div className="bg-[#0a1526] rounded-[2.5rem] w-full max-w-5xl shadow-2xl shadow-blue-900/20 overflow-hidden flex flex-col max-h-[95vh] border border-white/10 relative">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full filter blur-[80px] pointer-events-none"></div>
+                
+                <div className="p-8 bg-white/5 border-b border-white/10 flex justify-between items-center shrink-0 relative z-10">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-blue-500/20 p-3 rounded-2xl backdrop-blur-sm hidden sm:block border border-blue-500/30"><IdCardIcon className="w-6 h-6 text-blue-400" /></div>
                         <div>
-                            <h2 className="font-extrabold text-xl tracking-tight flex items-center gap-2">
+                            <h2 className="font-extrabold text-2xl tracking-tight text-white flex items-center gap-3">
                                 {isReadOnly ? 'Detail Pendaftaran' : initialData ? 'Perbaiki Data Peserta' : 'Formulir Pendaftaran Baru'}
-                                {initialData?.id_registrasi && <span className="bg-white/20 text-[10px] px-2 py-0.5 rounded-full font-mono tracking-widest">{initialData.id_registrasi}</span>}
+                                {initialData?.id_registrasi && <span className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] px-3 py-1 rounded-full font-mono tracking-widest">{initialData.id_registrasi}</span>}
                             </h2>
-                            <p className="text-cyan-200 text-xs font-medium mt-1">Kontingen {regency}</p>
+                            <p className="text-slate-400 text-xs font-bold mt-1 tracking-widest">Kontingen {regency}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="relative z-10 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 p-2.5 rounded-full transition-all">&times;</button>
                 </div>
                 
-                <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scroll-smooth">
+                <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden relative z-10">
+                    <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 scroll-smooth">
                         {errorMsg && (
-                            <div className="bg-rose-100 text-rose-700 p-4 rounded-xl text-sm font-bold flex justify-between items-center shadow-sm animate-in fade-in">
+                            <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 p-5 rounded-2xl text-sm font-bold flex justify-between items-center shadow-sm animate-in fade-in">
                                 <span className="uppercase">{errorMsg}</span>
-                                <button type="button" onClick={() => setErrorMsg('')} className="bg-rose-200 hover:bg-rose-300 rounded px-2 py-1">&times;</button>
+                                <button type="button" onClick={() => setErrorMsg('')} className="bg-rose-500/20 hover:bg-rose-500/40 rounded-lg px-3 py-1.5 transition-colors">&times;</button>
                             </div>
                         )}
                         {showDraftConfirm && (
-                             <div className="bg-amber-100 border border-amber-200 text-amber-800 p-5 rounded-xl text-sm font-bold flex flex-col gap-4 shadow-sm animate-in zoom-in-95">
-                                <p className="tracking-wide">Terdapat dokumen wajib yang belum lengkap. Tetap simpan sebagai Draft (Menunggu Verifikasi)?</p>
-                                <div className="flex gap-2">
-                                    <button type="button" onClick={() => { setShowDraftConfirm(false); executeSave(); }} className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg shadow tracking-wider text-xs">Ya, Simpan Draft</button>
-                                    <button type="button" onClick={() => setShowDraftConfirm(false)} className="bg-white hover:bg-amber-50 text-amber-800 px-5 py-2.5 rounded-lg shadow tracking-wider text-xs">Batal & Lengkapi</button>
+                             <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 p-6 rounded-2xl text-sm font-bold flex flex-col gap-5 shadow-sm animate-in zoom-in-95">
+                                <p className="tracking-wide text-base">Terdapat dokumen wajib yang belum lengkap. Tetap simpan sebagai Draft (Menunggu Verifikasi)?</p>
+                                <div className="flex gap-3">
+                                    <button type="button" onClick={() => { setShowDraftConfirm(false); executeSave(); }} className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl shadow-lg tracking-wider text-xs transition-all">Ya, Simpan Draft</button>
+                                    <button type="button" onClick={() => setShowDraftConfirm(false)} className="bg-white/10 hover:bg-white/20 text-white border border-white/10 px-6 py-3 rounded-xl shadow tracking-wider text-xs transition-all">Batal & Lengkapi</button>
                                 </div>
                             </div>
                         )}
                         {initialData?.status === 'Revision' && initialData.catatan_revisi && (
-                            <div className="p-5 bg-gradient-to-r from-rose-50 to-rose-100/50 border border-rose-200 rounded-2xl flex items-start gap-4 shadow-sm">
-                                <div className="bg-rose-500 p-2 rounded-full shrink-0 shadow-sm"><AlertCircleIcon className="w-5 h-5 text-white" /></div>
-                                <div><h4 className="font-bold text-rose-900 text-sm uppercase">Catatan Revisi dari Verifikator:</h4><p className="text-sm text-rose-800 mt-1.5 leading-relaxed uppercase">{initialData.catatan_revisi}</p></div>
+                            <div className="p-6 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-5 shadow-sm">
+                                <div className="bg-rose-500/20 p-3 rounded-2xl shrink-0 shadow-sm border border-rose-500/30"><AlertCircleIcon className="w-6 h-6 text-rose-400" /></div>
+                                <div><h4 className="font-bold text-rose-400 text-sm uppercase tracking-widest mb-1.5">Catatan Revisi dari Verifikator:</h4><p className="text-sm text-white/90 leading-relaxed uppercase bg-rose-500/5 p-3 rounded-xl border border-rose-500/10">{initialData.catatan_revisi}</p></div>
                             </div>
                         )}
 
-                        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">A</div>
-                                <h3 className="font-bold text-slate-800 text-lg tracking-wide">Informasi Dasar</h3>
+                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl border border-white/10">
+                            <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-5">
+                                <div className="w-10 h-10 rounded-2xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-black text-sm">A</div>
+                                <h3 className="font-black text-white text-xl tracking-widest">Informasi Dasar</h3>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 
                                 <div>
                                     <label className={labelClasses}><span>Kategori Peserta</span></label>
-                                    <select name="kategori" value={formData.kategori} onChange={handleChange} disabled={isReadOnly} className={`${inputClasses} uppercase ${!isReadOnly && 'bg-indigo-50/50 text-indigo-900 font-bold border-indigo-200'}`}>
-                                        <option value="Olahragawan">Olahragawan</option><option value="Pelatih">Pelatih</option><option value="Official">Official</option>
+                                    <select name="kategori" value={formData.kategori} onChange={handleChange} disabled={isReadOnly} className={`${inputClasses} ${!isReadOnly && 'bg-blue-500/10 text-blue-300 font-bold border-blue-500/30'}`}>
+                                        <option value="Olahragawan" className="bg-[#0a1526]">Olahragawan</option><option value="Pelatih" className="bg-[#0a1526]">Pelatih</option><option value="Official" className="bg-[#0a1526]">Official</option>
                                     </select>
                                 </div>
                                 <div className="lg:col-span-2">
                                     <label className={labelClasses}><span>{formData.kategori === 'Official' ? 'Jabatan Kontingen' : 'Cabang Olahraga'}</span></label>
-                                    <select name="cabor" value={formData.cabor} onChange={handleChange} disabled={isReadOnly} className={`${inputClasses} uppercase`}>
+                                    <select name="cabor" value={formData.cabor} onChange={handleChange} disabled={isReadOnly} className={inputClasses}>
                                         {formData.kategori === 'Official' ? (
-                                            <><option value="KETUA KONTINGEN">KETUA KONTINGEN</option><option value="SEKRETARIS KONTINGEN">SEKRETARIS KONTINGEN</option><option value="BENDAHARA KONTINGEN">BENDAHARA KONTINGEN</option><option value="ANGGOTA KONTINGEN">ANGGOTA KONTINGEN</option><option value="EKSTRA ANGGOTA KONTINGEN">EKSTRA ANGGOTA KONTINGEN</option></>
+                                            <><option value="KETUA KONTINGEN" className="bg-[#0a1526]">KETUA KONTINGEN</option><option value="SEKRETARIS KONTINGEN" className="bg-[#0a1526]">SEKRETARIS KONTINGEN</option><option value="BENDAHARA KONTINGEN" className="bg-[#0a1526]">BENDAHARA KONTINGEN</option><option value="ANGGOTA KONTINGEN" className="bg-[#0a1526]">ANGGOTA KONTINGEN</option><option value="EKSTRA ANGGOTA KONTINGEN" className="bg-[#0a1526]">EKSTRA ANGGOTA KONTINGEN</option></>
                                         ) : (
-                                            <><option value="Bola Basket 5X5">Bola Basket 5X5</option><option value="Bola Voli">Bola Voli</option><option value="Sepak Bola">Sepak Bola</option><option value="Sepak Takraw">Sepak Takraw</option></>
+                                            <><option value="Bola Basket 5X5" className="bg-[#0a1526]">Bola Basket 5X5</option><option value="Bola Voli" className="bg-[#0a1526]">Bola Voli</option><option value="Sepak Bola" className="bg-[#0a1526]">Sepak Bola</option><option value="Sepak Takraw" className="bg-[#0a1526]">Sepak Takraw</option></>
                                         )}
                                     </select>
                                 </div>
 
                                 <div className="lg:col-span-2">
-                                    <label className={labelClasses}><span>Nama Lengkap <span className="text-indigo-500 normal-case lowercase">(Otomatis Kapital)</span></span></label>
+                                    <label className={labelClasses}><span>Nama Lengkap <span className="text-blue-400 normal-case lowercase">(Otomatis Kapital)</span></span></label>
                                     <input type="text" name="nama" value={formData.nama} onChange={handleChange} required readOnly={isReadOnly} className={inputClasses} placeholder="Sesuai Akte Kelahiran" />
                                 </div>
                                 <div>
@@ -743,8 +745,8 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                                 
                                 <div>
                                     <label className={labelClasses}><span>Jenis Kelamin</span></label>
-                                    <select name="jenisKelamin" value={formData.jenisKelamin} onChange={handleChange} required disabled={isReadOnly} className={`${inputClasses} uppercase`}>
-                                        <option value="" disabled>-- Pilih --</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
+                                    <select name="jenisKelamin" value={formData.jenisKelamin} onChange={handleChange} required disabled={isReadOnly} className={inputClasses}>
+                                        <option value="" disabled className="bg-[#0a1526]">-- Pilih --</option><option value="Laki-laki" className="bg-[#0a1526]">Laki-laki</option><option value="Perempuan" className="bg-[#0a1526]">Perempuan</option>
                                     </select>
                                 </div>
                                 <div>
@@ -752,19 +754,19 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                                     <input type="text" name="tempatLahir" value={formData.tempatLahir} onChange={handleChange} required readOnly={isReadOnly} className={inputClasses} placeholder="Nama Kota/Kabupaten" />
                                 </div>
                                 <div>
-                                    <label className={labelClasses}><span>Tanggal Lahir</span> {formData.tanggalLahir && <span className="text-indigo-600 normal-case">(Usia: {calculateAge(formData.tanggalLahir)} Thn)</span>}</label>
+                                    <label className={labelClasses}><span>Tanggal Lahir</span> {formData.tanggalLahir && <span className="text-blue-400 normal-case bg-blue-500/10 px-2 py-0.5 rounded">(Usia: {calculateAge(formData.tanggalLahir)} Thn)</span>}</label>
                                     <input type="date" name="tanggalLahir" value={formData.tanggalLahir} onChange={handleChange} required readOnly={isReadOnly} className={inputClasses} />
                                 </div>
                             </div>
                         </div>
 
                         {formData.kategori === 'Olahragawan' && (
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/30 p-6 md:p-8 rounded-2xl border border-blue-100/50 shadow-sm">
-                                <div className="flex items-center gap-3 mb-6 border-b border-blue-200/50 pb-4">
-                                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">B</div><h3 className="font-bold text-blue-900 text-lg uppercase tracking-wide">Informasi Atlet</h3>
+                            <div className="bg-indigo-900/20 backdrop-blur-xl border border-indigo-500/20 p-8 rounded-[2rem] shadow-xl">
+                                <div className="flex items-center gap-4 mb-8 border-b border-indigo-500/20 pb-5">
+                                    <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-sm shadow-md">B</div><h3 className="font-black text-white text-xl uppercase tracking-widest">Informasi Atlet</h3>
                                 </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div className="lg:col-span-2">
                                         <label className={labelClasses}><span>Asal Sekolah</span></label>
                                         <input type="text" name="asalSekolah" value={formData.asalSekolah} onChange={handleChange} readOnly={isReadOnly} className={inputClasses} placeholder="Tuliskan nama sekolah lengkap..." />
@@ -780,21 +782,21 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                                     </div>
                                     <div>
                                         <label className={labelClasses}><span>Kelas</span></label>
-                                        <select name="kelas" value={formData.kelas} onChange={handleChange} disabled={isReadOnly} className={`${inputClasses} uppercase`}>
-                                            <option value="" disabled>-- Pilih --</option><option value="Kelas VII">Kelas VII</option><option value="Kelas VIII">Kelas VIII</option><option value="Kelas IX">Kelas IX</option><option value="Kelas X">Kelas X</option><option value="Kelas XI">Kelas XI</option><option value="Kelas XII">Kelas XII</option>
+                                        <select name="kelas" value={formData.kelas} onChange={handleChange} disabled={isReadOnly} className={inputClasses}>
+                                            <option value="" disabled className="bg-[#0a1526]">-- Pilih --</option><option value="Kelas VII" className="bg-[#0a1526]">Kelas VII</option><option value="Kelas VIII" className="bg-[#0a1526]">Kelas VIII</option><option value="Kelas IX" className="bg-[#0a1526]">Kelas IX</option><option value="Kelas X" className="bg-[#0a1526]">Kelas X</option><option value="Kelas XI" className="bg-[#0a1526]">Kelas XI</option><option value="Kelas XII" className="bg-[#0a1526]">Kelas XII</option>
                                         </select>
                                     </div>
                                     
                                     <div className={formData.asalSentra === 'KLUB' ? "lg:col-span-1" : "lg:col-span-3"}>
                                         <label className={labelClasses}><span>Asal Sentra/Klub</span></label>
-                                        <select name="asalSentra" value={formData.asalSentra} onChange={handleChange} disabled={isReadOnly} className={`${inputClasses} uppercase`}>
-                                            <option value="" disabled>-- Pilih --</option><option value="SPOBNAS">SPOBNAS</option><option value="SMANOR">SMANOR</option><option value="KLUB">KLUB</option>
+                                        <select name="asalSentra" value={formData.asalSentra} onChange={handleChange} disabled={isReadOnly} className={inputClasses}>
+                                            <option value="" disabled className="bg-[#0a1526]">-- Pilih --</option><option value="SPOBNAS" className="bg-[#0a1526]">SPOBNAS</option><option value="SMANOR" className="bg-[#0a1526]">SMANOR</option><option value="KLUB" className="bg-[#0a1526]">KLUB</option>
                                         </select>
                                     </div>
                                     {formData.asalSentra === 'KLUB' && (
                                         <div className="lg:col-span-2 animate-in fade-in slide-in-from-top-2">
                                             <label className={labelClasses}><span>Nama Klub Olahraga</span></label>
-                                            <input type="text" name="namaKlub" value={formData.namaKlub} onChange={handleChange} readOnly={isReadOnly} className={`${inputClasses} border-blue-300 focus:ring-blue-500`} placeholder="Tuliskan nama klub..." />
+                                            <input type="text" name="namaKlub" value={formData.namaKlub} onChange={handleChange} readOnly={isReadOnly} className={inputClasses} placeholder="Tuliskan nama klub..." />
                                         </div>
                                     )}
                                     
@@ -811,13 +813,13 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                         )}
 
                         {formData.kategori === 'Pelatih' && (
-                            <div className="bg-gradient-to-br from-amber-50 to-orange-50/30 p-6 md:p-8 rounded-2xl border border-amber-100/50 shadow-sm">
-                                <div className="flex items-center gap-3 mb-6 border-b border-amber-200/50 pb-4"><div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-sm shadow-md">B</div><h3 className="font-bold text-amber-900 text-lg uppercase tracking-wide">Informasi Kepelatihan</h3></div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div className="bg-amber-900/20 backdrop-blur-xl border border-amber-500/20 p-8 rounded-[2rem] shadow-xl">
+                                <div className="flex items-center gap-4 mb-8 border-b border-amber-500/20 pb-5"><div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black text-sm shadow-md">B</div><h3 className="font-black text-white text-xl uppercase tracking-widest">Informasi Kepelatihan</h3></div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div>
                                         <label className={labelClasses}><span>Level Lisensi</span></label>
-                                        <select name="lisensi" value={formData.lisensi} onChange={handleChange} disabled={isReadOnly} className={`${inputClasses} uppercase`}>
-                                            <option value="" disabled>-- Pilih Level --</option><option value="Kabupaten/Kota">Kabupaten/Kota</option><option value="Provinsi">Provinsi</option><option value="Nasional">Nasional</option><option value="Internasional">Internasional</option>
+                                        <select name="lisensi" value={formData.lisensi} onChange={handleChange} disabled={isReadOnly} className={inputClasses}>
+                                            <option value="" disabled className="bg-[#0a1526]">-- Pilih Level --</option><option value="Kabupaten/Kota" className="bg-[#0a1526]">Kabupaten/Kota</option><option value="Provinsi" className="bg-[#0a1526]">Provinsi</option><option value="Nasional" className="bg-[#0a1526]">Nasional</option><option value="Internasional" className="bg-[#0a1526]">Internasional</option>
                                         </select>
                                     </div>
                                     <div><label className={labelClasses}><span>BPJS Kesehatan</span><span className={`font-mono ${getCounterColor(formData.bpjsKes, 13)}`}>{formData.bpjsKes ? formData.bpjsKes.toString().length : 0}/13 Karakter</span></label><input type="text" name="bpjsKes" value={formData.bpjsKes} onChange={handleChange} readOnly={isReadOnly} className={`${inputClasses} font-mono`} placeholder="Contoh: 0001234567890"/></div>
@@ -826,31 +828,31 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                             </div>
                         )}
 
-                        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm">C</div>
+                        <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] shadow-xl border border-white/10">
+                            <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-5">
+                                <div className="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-black text-sm">C</div>
                                 <div className="flex-1 flex justify-between items-end">
-                                    <h3 className="font-bold text-slate-800 text-lg uppercase tracking-wide">Unggah Dokumen Berkas</h3>
-                                    <div className="text-right"><span className="block text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1 rounded-full mb-1 tracking-wider">{isReadOnly ? 'Mode Lihat Saja' : 'Pdf Maks 1MB / File'}</span></div>
+                                    <h3 className="font-black text-white text-xl uppercase tracking-widest">Unggah Dokumen Berkas</h3>
+                                    <div className="text-right"><span className="block text-xs font-bold text-slate-400 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full mb-1 tracking-wider">{isReadOnly ? 'Mode Lihat Saja' : 'Pdf Maks 1MB / File'}</span></div>
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                                 {docsToShow.map((doc, index) => {
                                     const isUploaded = docStatus[doc.id] && docStatus[doc.id].includes('✓');
                                     return (
-                                        <label key={doc.id} className={`border rounded-xl p-4 bg-slate-50/50 transition-colors flex flex-col justify-between group cursor-pointer ${!isUploaded && !isReadOnly ? 'border-amber-200/60 bg-amber-50/30 hover:bg-amber-50' : 'border-slate-200/60 hover:bg-slate-50'} ${isReadOnly ? 'opacity-70 cursor-default' : ''}`}>
-                                            <div className="block text-[10px] sm:text-xs font-bold text-slate-600 mb-3 leading-snug tracking-wide cursor-pointer">
-                                                <span className="text-indigo-400 mr-1">{index + 1}.</span> {doc.label}
-                                                {!isUploaded && !isReadOnly && <span className="text-rose-500 text-[9px] ml-2 animate-pulse">(Wajib)</span>}
+                                        <label key={doc.id} className={`border border-white/10 rounded-2xl p-5 bg-white/5 backdrop-blur-md transition-all flex flex-col justify-between group cursor-pointer ${!isUploaded && !isReadOnly ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10' : 'hover:bg-white/10 hover:border-white/20'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                            <div className="block text-[11px] sm:text-xs font-black text-slate-300 mb-4 leading-snug tracking-widest cursor-pointer">
+                                                <span className="text-blue-400 mr-2 opacity-70">{index + 1}.</span> {doc.label}
+                                                {!isUploaded && !isReadOnly && <span className="text-rose-400 text-[10px] ml-2 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">(Wajib)</span>}
                                             </div>
                                             <input type="file" className="hidden" accept="image/jpeg, image/png, application/pdf" disabled={isReadOnly} onChange={(e) => handleFileUpload(e, doc.id)} />
-                                            <div className={`w-full border-2 border-dashed rounded-xl py-3 px-2 text-center transition-all flex flex-col items-center gap-2 tracking-wider ${isUploaded ? 'border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm' : 'border-slate-300 group-hover:border-indigo-400 group-hover:bg-indigo-50/50 text-slate-500'}`}>
-                                                {doc.id === 'foto' ? <CameraIcon className={`w-6 h-6 ${isUploaded ? 'text-emerald-500' : 'text-slate-400 group-hover:text-indigo-400 transition-colors'}`} /> : <FileUpIcon className={`w-6 h-6 ${isUploaded ? 'text-emerald-500' : 'text-slate-400 group-hover:text-indigo-400 transition-colors'}`} />}
-                                                <span className="text-[10px] font-bold w-full truncate px-2">{docStatus[doc.id] ? docStatus[doc.id] : (isReadOnly ? 'Dokumen Kosong' : 'Pilih File')}</span>
+                                            <div className={`w-full border-2 border-dashed rounded-xl py-4 px-3 text-center transition-all flex flex-col items-center gap-3 tracking-wider ${isUploaded ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400 shadow-sm' : 'border-white/20 group-hover:border-blue-400 group-hover:bg-blue-500/10 text-slate-400'}`}>
+                                                {doc.id === 'foto' ? <CameraIcon className={`w-8 h-8 ${isUploaded ? 'text-emerald-400' : 'text-slate-500 group-hover:text-blue-400 transition-colors'}`} /> : <FileUpIcon className={`w-8 h-8 ${isUploaded ? 'text-emerald-400' : 'text-slate-500 group-hover:text-blue-400 transition-colors'}`} />}
+                                                <span className="text-[11px] font-bold w-full truncate px-2">{docStatus[doc.id] ? docStatus[doc.id] : (isReadOnly ? 'Dokumen Kosong' : 'Pilih File')}</span>
                                                 {formData[doc.id + '_url'] && (
-                                                    <a href={formData[doc.id + '_url']} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="mt-2 px-3 py-1 bg-indigo-600 text-white text-[9px] font-black rounded-full hover:bg-indigo-700 transition-all flex items-center gap-1 shadow-sm w-fit mx-auto normal-case">
-                                                        <EyeIcon className="w-3 h-3" /> CEK UNGGAHAN
+                                                    <a href={formData[doc.id + '_url']} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="mt-2 px-4 py-1.5 bg-blue-600/20 border border-blue-500/30 text-blue-300 text-[10px] font-black rounded-full hover:bg-blue-500 hover:text-white transition-all flex items-center gap-1.5 shadow-sm w-fit mx-auto normal-case">
+                                                        <EyeIcon className="w-3.5 h-3.5" /> CEK UNGGAHAN
                                                     </a>
                                                 )}
                                             </div>
@@ -861,12 +863,12 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                         </div>
                     </div>
                     
-                    <div className="p-6 flex justify-end gap-3 border-t border-slate-100 bg-slate-50/80 backdrop-blur-sm shrink-0">
-                        <button type="button" onClick={onClose} disabled={isSaving} className="px-6 py-3 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50 text-sm tracking-wide">
+                    <div className="p-8 flex justify-end gap-4 border-t border-white/10 bg-white/5 backdrop-blur-xl shrink-0 relative z-10">
+                        <button type="button" onClick={onClose} disabled={isSaving} className="px-8 py-3.5 text-slate-300 font-bold hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10 rounded-xl transition-all disabled:opacity-50 text-sm tracking-widest uppercase">
                             {isReadOnly ? 'Tutup Detail' : 'Batal'}
                         </button>
                         {!isReadOnly && !showDraftConfirm && (
-                            <button type="submit" disabled={isSaving} className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 text-sm tracking-wide">
+                            <button type="submit" disabled={isSaving} className="px-10 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl shadow-lg shadow-blue-600/30 transition-all hover:-translate-y-1 flex items-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 text-sm tracking-widest uppercase border border-blue-500">
                                 {isSaving ? <><ClockIcon className="w-5 h-5 animate-spin" /> Menyimpan...</> : <><CheckCircleIcon className="w-5 h-5" /> Simpan Data</>}
                             </button>
                         )}
@@ -878,7 +880,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
 }
 
 // ==========================================
-// VIEW 3: ADMIN DASHBOARD
+// VIEW 3: ADMIN DASHBOARD (BENTO GLASS)
 // ==========================================
 function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos, setLogos, bgImages, setBgImages, onChangeAdminPassword, passwords, onSyncSettings }) {
     const [activeMenu, setActiveMenu] = useState('verifikasi');
@@ -915,7 +917,7 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
     const MenuBtn = ({ id, label, icon: Icon, activeColor }) => {
         const isActive = activeMenu === id;
         return (
-            <button onClick={() => setActiveMenu(id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold transition-all tracking-wide text-xs ${isActive ? activeColor : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5'}`}>
+            <button onClick={() => setActiveMenu(id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold transition-all tracking-wide text-xs border ${isActive ? activeColor : 'text-slate-400 border-transparent hover:text-white hover:bg-white/5 hover:border-white/10'}`}>
                 <Icon className={`w-5 h-5 ${isActive ? '' : 'opacity-70'}`} /> {label}
             </button>
         );
@@ -946,7 +948,6 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                 const newLogos = [...logos];
                 newLogos[index] = url;
                 setLogos(newLogos);
-                // SIMPAN KE CLOUD
                 onSyncSettings({ logos: newLogos });
             } catch (err) { console.error(err); }
         }
@@ -961,7 +962,6 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                 const url = await getDownloadURL(snapshot.ref);
                 const newBgs = { ...bgImages, [kategori]: url };
                 setBgImages(newBgs);
-                // SIMPAN KE CLOUD
                 onSyncSettings({ bgImages: newBgs });
             } catch (err) { console.error(err); }
         }
@@ -994,47 +994,50 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
     };
 
     return (
-        <div className="flex h-screen uppercase bg-slate-50 overflow-hidden font-sans text-slate-800">
+        <div className="flex h-screen uppercase bg-[#020617] overflow-hidden font-sans text-slate-200 relative">
+            <div className="fixed inset-0 z-0 pointer-events-none print:hidden">
+                <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-900/20 blur-[150px] rounded-full"></div>
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/20 blur-[150px] rounded-full"></div>
+            </div>
+
             {toastMessage && (
-                <div className="fixed bottom-8 right-8 bg-slate-900/95 backdrop-blur-md border border-emerald-500/40 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 z-50 animate-in slide-in-from-bottom-6 fade-in duration-300">
-                    <div className="bg-emerald-500/20 p-2 rounded-full"><CheckCircleIcon className="w-6 h-6 text-emerald-400" /></div>
-                    <div><h4 className="text-white font-extrabold text-sm mb-0.5 tracking-wide">Berhasil!</h4><p className="text-emerald-100 text-xs font-medium tracking-wider">{toastMessage}</p></div>
+                <div className="fixed bottom-8 right-8 bg-white/10 backdrop-blur-xl border border-emerald-500/40 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 z-50 animate-in slide-in-from-bottom-6 fade-in duration-300">
+                    <div className="bg-emerald-500/20 p-2 rounded-full border border-emerald-500/30"><CheckCircleIcon className="w-6 h-6 text-emerald-400" /></div>
+                    <div><h4 className="text-white font-black text-sm mb-0.5 tracking-wide">Berhasil!</h4><p className="text-emerald-100/80 text-xs font-bold tracking-wider">{toastMessage}</p></div>
                 </div>
             )}
 
-            <aside className="w-72 bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-900 text-white flex flex-col shadow-2xl z-20 print:hidden relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-48 bg-cyan-500/10 filter blur-3xl"></div>
+            <aside className="w-72 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col shadow-2xl z-20 print:hidden relative overflow-hidden">
                 <div className="p-8 border-b border-white/10 text-center relative z-10">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-white/5 p-2">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-amber-500/10 border border-amber-500/20 p-2 shadow-lg">
                         {logos[0] ? <img src={logos[0]} alt="Logo Utama" className="w-full h-full object-contain drop-shadow-lg" /> : <ShieldIcon className="w-8 h-8 text-amber-400" />}
                     </div>
-                    <h2 className="font-extrabold tracking-tight text-lg text-white">ADMIN PROVINSI</h2>
+                    <h2 className="font-black tracking-tight text-xl text-white">ADMIN PROVINSI</h2>
                     <p className="text-amber-400 text-[10px] font-bold tracking-widest mt-1">Pusat Verifikasi Data</p>
                 </div>
                 <nav className="flex-1 p-4 space-y-2 relative z-10 overflow-y-auto">
-                    <MenuBtn id="verifikasi" label="Verifikasi Berkas" icon={CheckCircleIcon} activeColor="bg-white/10 text-blue-400 border-l-4 border-blue-400 shadow-sm" />
-                    <MenuBtn id="cetak" label="Cetak ID Card" icon={PrinterIcon} activeColor="bg-white/10 text-teal-400 border-l-4 border-teal-400 shadow-sm" />
-                    <MenuBtn id="akun" label="Manajemen Akun" icon={ShieldIcon} activeColor="bg-white/10 text-amber-400 border-l-4 border-amber-400 shadow-sm" />
-                    <MenuBtn id="pengaturan" label="Pengaturan Tampilan" icon={SettingsIcon} activeColor="bg-white/10 text-indigo-400 border-l-4 border-indigo-400 shadow-sm" />
+                    <MenuBtn id="verifikasi" label="Verifikasi Berkas" icon={CheckCircleIcon} activeColor="bg-blue-500/20 text-blue-300 border-blue-500/30 shadow-sm" />
+                    <MenuBtn id="cetak" label="Cetak ID Card" icon={PrinterIcon} activeColor="bg-teal-500/20 text-teal-300 border-teal-500/30 shadow-sm" />
+                    <MenuBtn id="akun" label="Manajemen Akun" icon={ShieldIcon} activeColor="bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-sm" />
+                    <MenuBtn id="pengaturan" label="Pengaturan Tampilan" icon={SettingsIcon} activeColor="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 shadow-sm" />
                 </nav>
                 <div className="p-4 border-t border-white/10 relative z-10">
-                    <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl font-medium transition-all tracking-wide text-xs">
+                    <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-xl font-bold transition-all tracking-wide text-xs">
                         <LogOutIcon className="w-5 h-5" /> Keluar Sistem
                     </button>
                 </div>
             </aside>
 
-            <main className="flex-1 flex flex-col overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-indigo-50 to-transparent pointer-events-none z-0"></div>
-                <header className="bg-white/80 backdrop-blur-md p-6 md:p-8 border-b border-slate-200/60 flex justify-between items-center shadow-sm z-10 print:hidden sticky top-0">
+            <main className="flex-1 flex flex-col overflow-hidden relative z-10">
+                <header className="bg-white/5 backdrop-blur-md p-6 md:p-8 border-b border-white/10 flex justify-between items-center shadow-sm z-10 print:hidden sticky top-0">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+                        <h1 className="text-3xl font-black text-white tracking-tight">
                             {activeMenu === 'verifikasi' && 'Dashboard Verifikasi'}
                             {activeMenu === 'cetak' && 'Pencetakan ID Card Peserta'}
                             {activeMenu === 'akun' && 'Manajemen Keamanan Akun'}
                             {activeMenu === 'pengaturan' && 'Pengaturan Tampilan Aplikasi'}
                         </h1>
-                        <p className="text-slate-500 text-sm font-medium mt-1 normal-case">
+                        <p className="text-slate-400 text-sm font-medium mt-1.5 normal-case tracking-wide">
                             {activeMenu === 'verifikasi' && 'Validasi silang dokumen pendaftaran 13 wilayah.'}
                             {activeMenu === 'cetak' && 'Pilih ID Card yang akan dicetak dengan mencentang kotak.'}
                             {activeMenu === 'akun' && 'Kelola ulang kata sandi standar untuk operator wilayah.'}
@@ -1046,57 +1049,57 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                 <div className="p-6 md:p-8 overflow-y-auto flex-1 flex flex-col z-10">
                     
                     {activeMenu === 'pengaturan' && (
-                        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/60 overflow-hidden flex flex-col">
-                            <div className="p-5 border-b border-slate-100 bg-slate-50/80 shrink-0">
-                                <h3 className="font-bold text-slate-700">Manajemen Logo Identitas Website</h3>
-                                <p className="text-xs text-slate-500 mt-1 normal-case">Logo yang diunggah di sini akan otomatis berubah pada halaman Login, Sidebar, dan Header ID Card (Pencetakan).</p>
+                        <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col">
+                            <div className="p-6 border-b border-white/10 bg-transparent shrink-0">
+                                <h3 className="font-black text-white text-lg tracking-widest uppercase">Manajemen Logo Identitas Website</h3>
+                                <p className="text-xs text-slate-400 mt-1 normal-case font-medium">Logo yang diunggah di sini akan otomatis berubah pada halaman Login, Sidebar, dan Header ID Card (Pencetakan).</p>
                             </div>
                             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="w-full">
-                                    <label className="block text-sm font-bold text-slate-700 mb-2 tracking-widest text-center">Logo Utama (Kiri)</label>
-                                    <div className="border-2 border-dashed border-indigo-200 bg-indigo-50/30 rounded-2xl p-6 text-center hover:bg-indigo-50 transition cursor-pointer relative min-h-[200px] flex items-center justify-center">
+                                    <label className="block text-xs font-bold text-slate-400 mb-3 tracking-widest text-center uppercase">Logo Utama (Kiri)</label>
+                                    <div className="border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 rounded-[2rem] p-6 text-center hover:bg-indigo-500/10 hover:border-indigo-500/50 transition-all cursor-pointer relative min-h-[200px] flex items-center justify-center">
                                         <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, 0)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                        {logos[0] ? <img src={logos[0]} alt="Logo 1" className="h-32 object-contain mx-auto drop-shadow-md" /> : <div className="py-4"><CameraIcon className="w-10 h-10 text-indigo-300 mx-auto mb-2" /><p className="text-sm font-bold text-indigo-500 tracking-wide">Pilih Logo Kiri</p></div>}
+                                        {logos[0] ? <img src={logos[0]} alt="Logo 1" className="h-32 object-contain mx-auto drop-shadow-2xl" /> : <div className="py-4"><CameraIcon className="w-12 h-12 text-indigo-400 mx-auto mb-3" /><p className="text-sm font-bold text-indigo-300 tracking-wide uppercase">Pilih Logo Kiri</p></div>}
                                     </div>
-                                    {logos[0] && <div className="text-center mt-3"><button onClick={() => {const l = [...logos]; l[0] = null; setLogos(l); onSyncSettings({ logos: l });}} className="text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-50 px-4 py-2 rounded-lg transition-colors tracking-wider">Hapus Logo Utama</button></div>}
+                                    {logos[0] && <div className="text-center mt-4"><button onClick={() => {const l = [...logos]; l[0] = null; setLogos(l); onSyncSettings({ logos: l });}} className="text-xs font-black text-rose-400 hover:text-white bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 px-5 py-2.5 rounded-xl transition-colors tracking-widest uppercase shadow-sm">Hapus Logo Utama</button></div>}
                                 </div>
                                 <div className="w-full">
-                                    <label className="block text-sm font-bold text-slate-700 mb-2 tracking-widest text-center">Logo Sekunder (Kanan)</label>
-                                    <div className="border-2 border-dashed border-cyan-200 bg-cyan-50/30 rounded-2xl p-6 text-center hover:bg-cyan-50 transition cursor-pointer relative min-h-[200px] flex items-center justify-center">
+                                    <label className="block text-xs font-bold text-slate-400 mb-3 tracking-widest text-center uppercase">Logo Sekunder (Kanan)</label>
+                                    <div className="border-2 border-dashed border-cyan-500/30 bg-cyan-500/5 rounded-[2rem] p-6 text-center hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all cursor-pointer relative min-h-[200px] flex items-center justify-center">
                                         <input type="file" accept="image/*" onChange={(e) => handleLogoUpload(e, 1)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                        {logos[1] ? <img src={logos[1]} alt="Logo 2" className="h-32 object-contain mx-auto drop-shadow-md" /> : <div className="py-4"><CameraIcon className="w-10 h-10 text-cyan-300 mx-auto mb-2" /><p className="text-sm font-bold text-cyan-500 tracking-wide">Pilih Logo Kanan</p><p className="text-xs text-cyan-400 font-medium mt-1 tracking-widest">(Opsional)</p></div>}
+                                        {logos[1] ? <img src={logos[1]} alt="Logo 2" className="h-32 object-contain mx-auto drop-shadow-2xl" /> : <div className="py-4"><CameraIcon className="w-12 h-12 text-cyan-400 mx-auto mb-3" /><p className="text-sm font-bold text-cyan-300 tracking-wide uppercase">Pilih Logo Kanan</p><p className="text-[10px] text-cyan-500/50 font-bold mt-1 tracking-widest">(Opsional)</p></div>}
                                     </div>
-                                    {logos[1] && <div className="text-center mt-3"><button onClick={() => {const l = [...logos]; l[1] = null; setLogos(l); onSyncSettings({ logos: l });}} className="text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-50 px-4 py-2 rounded-lg transition-colors tracking-wider">Hapus Logo Sekunder</button></div>}
+                                    {logos[1] && <div className="text-center mt-4"><button onClick={() => {const l = [...logos]; l[1] = null; setLogos(l); onSyncSettings({ logos: l });}} className="text-xs font-black text-rose-400 hover:text-white bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 px-5 py-2.5 rounded-xl transition-colors tracking-widest uppercase shadow-sm">Hapus Logo Sekunder</button></div>}
                                 </div>
                             </div>
 
-                            <div className="p-5 border-b border-slate-100 bg-slate-50/80 shrink-0 border-t border-slate-200">
-                                <h3 className="font-bold text-slate-700">Manajemen Background ID Card Khusus</h3>
-                                <p className="text-xs text-slate-500 mt-1 normal-case">Unggah gambar vertikal (Portrait) berukuran proporsional 90x130mm. Desain bawaan (warna-warni) akan disembunyikan otomatis jika background ini diisi.</p>
+                            <div className="p-6 border-b border-white/10 bg-transparent shrink-0 border-t">
+                                <h3 className="font-black text-white text-lg tracking-widest uppercase">Manajemen Background ID Card Khusus</h3>
+                                <p className="text-xs text-slate-400 mt-1 normal-case font-medium">Unggah gambar vertikal (Portrait) berukuran proporsional 90x130mm. Desain bawaan (warna-warni) akan disembunyikan otomatis jika background ini diisi.</p>
                             </div>
                             <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                                 {['Olahragawan', 'Pelatih', 'Official'].map(kategori => (
                                     <div key={kategori} className="w-full">
-                                        <label className="block text-sm font-bold text-slate-700 mb-2 tracking-widest text-center">BG {kategori}</label>
-                                        <div className="border-2 border-dashed border-slate-300 bg-slate-50 rounded-2xl p-4 text-center hover:bg-slate-100 transition cursor-pointer relative min-h-[250px] flex items-center justify-center overflow-hidden shadow-inner">
+                                        <label className="block text-xs font-bold text-slate-400 mb-3 tracking-widest text-center uppercase">BG {kategori}</label>
+                                        <div className="border-2 border-dashed border-white/20 bg-black/20 rounded-[2rem] p-4 text-center hover:border-white/40 transition-all cursor-pointer relative min-h-[280px] flex items-center justify-center overflow-hidden shadow-inner">
                                             <input type="file" accept="image/*" onChange={(e) => handleBgUpload(e, kategori)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                                             {bgImages[kategori] ? (
                                                 <>
-                                                    <img src={bgImages[kategori]} alt={`BG ${kategori}`} className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                                                    <div className="relative z-10 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
-                                                        <p className="text-xs font-bold text-emerald-600 tracking-wide">✓ Aktif</p>
+                                                    <img src={bgImages[kategori]} alt={`BG ${kategori}`} className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                                                    <div className="relative z-10 bg-[#020617]/80 backdrop-blur px-4 py-2 rounded-xl shadow-lg border border-white/10">
+                                                        <p className="text-xs font-black text-emerald-400 tracking-widest uppercase">✓ Aktif</p>
                                                     </div>
                                                 </>
                                             ) : (
                                                 <div className="py-4 relative z-0">
-                                                    <FileUpIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                                                    <p className="text-xs font-bold text-slate-500 tracking-wide">Pilih Desain BG</p>
+                                                    <FileUpIcon className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+                                                    <p className="text-xs font-bold text-slate-400 tracking-widest uppercase">Pilih Desain BG</p>
                                                 </div>
                                             )}
                                         </div>
                                         {bgImages[kategori] && (
-                                            <div className="text-center mt-3">
-                                                <button onClick={() => {const newBgs = {...bgImages, [kategori]: null}; setBgImages(newBgs); onSyncSettings({ bgImages: newBgs });}} className="text-xs font-bold text-rose-500 hover:text-rose-600 bg-rose-50 px-4 py-2 rounded-lg transition-colors tracking-wider shadow-sm border border-rose-100 hover:-translate-y-0.5">
+                                            <div className="text-center mt-4">
+                                                <button onClick={() => {const newBgs = {...bgImages, [kategori]: null}; setBgImages(newBgs); onSyncSettings({ bgImages: newBgs });}} className="text-xs font-black text-rose-400 hover:text-white bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 px-5 py-2.5 rounded-xl transition-all tracking-widest shadow-sm hover:-translate-y-0.5 uppercase">
                                                     Hapus Background
                                                 </button>
                                             </div>
@@ -1116,95 +1119,95 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                                 <StatCard title="Butuh Perbaikan" value={revision} type="danger" />
                             </div>
 
-                            <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/60 flex-1 flex flex-col overflow-hidden">
+                            <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/10 flex-1 flex flex-col overflow-hidden">
                                 
-                                <div className="flex flex-col gap-4 p-4 border-b border-slate-100 bg-slate-50/50 shrink-0">
+                                <div className="flex flex-col gap-4 p-6 border-b border-white/10 bg-transparent shrink-0">
                                     <div className="flex gap-4 flex-wrap items-center justify-between">
                                         <div className="relative flex-1 min-w-[250px] max-w-lg">
-                                            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"/>
+                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5"/>
                                             <input 
                                                 type="text" 
                                                 placeholder="Pencarian Cepat Nama / NIK / ID Reg..." 
                                                 value={searchTerm}
                                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                                className="w-full normal-case pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/30 outline-none shadow-sm transition-all"
+                                                className="w-full normal-case pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-sm font-medium text-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-sm transition-all"
                                             />
                                         </div>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-3">
                                             {selectedForApproval.length > 0 && (
                                                 showBulkConfirm ? (
-                                                    <div className="flex gap-2 items-center bg-amber-100 px-4 py-2 rounded-xl shadow-sm animate-in zoom-in-95">
-                                                        <span className="text-xs font-bold text-amber-800">Setujui {selectedForApproval.length} Data?</span>
-                                                        <button onClick={executeBulkApprove} className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-xs font-bold transition">YA</button>
-                                                        <button onClick={() => setShowBulkConfirm(false)} className="px-3 py-1.5 bg-white text-amber-800 rounded text-xs font-bold transition hover:bg-amber-50">BATAL</button>
+                                                    <div className="flex gap-2 items-center bg-amber-500/20 border border-amber-500/30 px-5 py-2.5 rounded-xl shadow-sm animate-in zoom-in-95">
+                                                        <span className="text-xs font-black text-amber-400 tracking-widest uppercase">Setujui {selectedForApproval.length} Data?</span>
+                                                        <button onClick={executeBulkApprove} className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-xs font-black transition uppercase tracking-wider shadow-sm">YA</button>
+                                                        <button onClick={() => setShowBulkConfirm(false)} className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-slate-300 rounded-lg text-xs font-black transition uppercase tracking-wider border border-white/10">BATAL</button>
                                                     </div>
                                                 ) : (
-                                                    <button onClick={() => setShowBulkConfirm(true)} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center gap-2 shadow-md shadow-indigo-500/30 transition-all hover:-translate-y-0.5 whitespace-nowrap animate-in fade-in tracking-wide text-xs">
-                                                        <CheckCircleIcon className="w-4 h-4"/> Setujui ({selectedForApproval.length}) Terpilih
+                                                    <button onClick={() => setShowBulkConfirm(true)} className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5 whitespace-nowrap animate-in fade-in tracking-widest text-xs uppercase border border-blue-500">
+                                                        <CheckCircleIcon className="w-5 h-5"/> Setujui ({selectedForApproval.length}) Terpilih
                                                     </button>
                                                 )
                                             )}
-                                            <button onClick={handleExportCSV} className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold flex items-center gap-2 shadow-sm transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                                            <button onClick={handleExportCSV} className="px-6 py-3.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-xl font-black flex items-center gap-2 shadow-sm transition-all hover:-translate-y-0.5 whitespace-nowrap text-xs tracking-widest uppercase">
                                                 <FileTextIcon className="w-5 h-5"/> Export Data
                                             </button>
                                         </div>
                                     </div>
                                     
-                                    <div className="flex gap-4 flex-wrap">
-                                        <select value={filterRegency} onChange={(e) => setFilterRegency(e.target.value)} className="flex-1 min-w-[150px] p-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500/30 outline-none shadow-sm uppercase">
-                                            {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                                    <div className="flex gap-4 flex-wrap mt-2">
+                                        <select value={filterRegency} onChange={(e) => setFilterRegency(e.target.value)} className="flex-1 min-w-[150px] p-3.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-slate-300 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-sm uppercase appearance-none cursor-pointer">
+                                            {REGIONS.map(r => <option key={r} value={r} className="bg-[#0a1526]">{r}</option>)}
                                         </select>
-                                        <select value={filterCabor} onChange={(e) => setFilterCabor(e.target.value)} className="flex-1 min-w-[150px] p-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500/30 outline-none shadow-sm uppercase">
-                                            {CABOR_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                                        <select value={filterCabor} onChange={(e) => setFilterCabor(e.target.value)} className="flex-1 min-w-[150px] p-3.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-slate-300 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-sm uppercase appearance-none cursor-pointer">
+                                            {CABOR_LIST.map(c => <option key={c} value={c} className="bg-[#0a1526]">{c}</option>)}
                                         </select>
-                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="flex-1 min-w-[150px] p-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500/30 outline-none shadow-sm uppercase">
-                                            <option value="Semua">Semua Status</option>
-                                            <option value="Pending">Menunggu (Pending)</option>
-                                            <option value="Approved">Disetujui (Approved)</option>
-                                            <option value="Revision">Revisi (Revision)</option>
+                                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="flex-1 min-w-[150px] p-3.5 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-slate-300 focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none shadow-sm uppercase appearance-none cursor-pointer">
+                                            <option value="Semua" className="bg-[#0a1526]">Semua Status</option>
+                                            <option value="Pending" className="bg-[#0a1526]">Menunggu (Pending)</option>
+                                            <option value="Approved" className="bg-[#0a1526]">Disetujui (Approved)</option>
+                                            <option value="Revision" className="bg-[#0a1526]">Revisi (Revision)</option>
                                         </select>
                                     </div>
                                 </div>
 
-                                <div className="overflow-y-auto flex-1">
+                                <div className="overflow-y-auto flex-1 p-2">
                                     <table className="w-full text-left text-sm">
-                                        <thead className="bg-white text-slate-500 text-[10px] tracking-wider border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                                        <thead className="text-slate-400 text-[10px] tracking-widest border-b border-white/10 sticky top-0 z-10 bg-[#020617]/80 backdrop-blur-md">
                                             <tr>
                                                 <th className="px-6 py-5 w-12">
-                                                    <input type="checkbox" className="w-4 h-4 accent-indigo-600 cursor-pointer rounded border-slate-300" onChange={handleSelectAllForApproval} checked={filteredData.filter(p => p.status !== 'Approved').length > 0 && selectedForApproval.length === filteredData.filter(p => p.status !== 'Approved').length} />
+                                                    <input type="checkbox" className="w-4 h-4 accent-blue-500 cursor-pointer rounded border-white/20 bg-white/5" onChange={handleSelectAllForApproval} checked={filteredData.filter(p => p.status !== 'Approved').length > 0 && selectedForApproval.length === filteredData.filter(p => p.status !== 'Approved').length} />
                                                 </th>
-                                                <th className="px-2 py-5 font-bold">Data Peserta & Profil</th>
-                                                <th className="px-6 py-5 font-bold">Asal Kontingen</th>
-                                                <th className="px-6 py-5 font-bold">Status Berkas</th>
-                                                <th className="px-6 py-5 font-bold text-right">Tindakan Admin</th>
+                                                <th className="px-2 py-5 font-bold uppercase">Data Peserta & Profil</th>
+                                                <th className="px-6 py-5 font-bold uppercase">Asal Kontingen</th>
+                                                <th className="px-6 py-5 font-bold uppercase">Status Berkas</th>
+                                                <th className="px-6 py-5 font-bold text-right uppercase">Tindakan Admin</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100">
+                                        <tbody className="divide-y divide-white/5">
                                             {filteredData.length === 0 ? (
-                                                <tr><td colSpan="5" className="text-center py-16 text-slate-400 font-medium bg-slate-50/30 normal-case">Tidak ada data pendaftaran yang sesuai dengan pencarian/filter.</td></tr>
+                                                <tr><td colSpan="5" className="text-center py-16 text-slate-500 font-medium normal-case">Tidak ada data pendaftaran yang sesuai dengan pencarian/filter.</td></tr>
                                             ) : (
                                                 filteredData.map(p => (
-                                                    <tr key={p.id} className={`transition-colors group ${p.status === 'Pending' ? 'bg-amber-50/20 hover:bg-amber-50/60' : 'hover:bg-indigo-50/30'}`}>
-                                                        <td className="px-6 py-4">
+                                                    <tr key={p.id} className={`transition-colors group ${p.status === 'Pending' ? 'bg-amber-500/5 hover:bg-amber-500/10' : 'hover:bg-white/5'}`}>
+                                                        <td className="px-6 py-5">
                                                             {p.status !== 'Approved' && (
-                                                                <input type="checkbox" className="w-4 h-4 accent-indigo-600 cursor-pointer rounded border-slate-300" checked={selectedForApproval.includes(p.id)} onChange={() => toggleSelectForApproval(p.id)} />
+                                                                <input type="checkbox" className="w-4 h-4 accent-blue-500 cursor-pointer rounded border-white/20 bg-white/5" checked={selectedForApproval.includes(p.id)} onChange={() => toggleSelectForApproval(p.id)} />
                                                             )}
                                                         </td>
-                                                        <td className="px-2 py-4">
-                                                            <div className="font-extrabold text-slate-800 flex items-center gap-2">
+                                                        <td className="px-2 py-5">
+                                                            <div className="font-extrabold text-white flex items-center gap-2 text-base">
                                                                 {p.nama}
-                                                                {p.tanggalLahir && <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${p.kategori === 'Olahragawan' && new Date(p.tanggalLahir) < new Date('2009-01-01') ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-500'}`}>UMUR: {calculateAge(p.tanggalLahir)}</span>}
+                                                                {p.tanggalLahir && <span className={`px-2 py-0.5 rounded text-[9px] font-black tracking-wider border ${p.kategori === 'Olahragawan' && new Date(p.tanggalLahir) < new Date('2009-01-01') ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-white/10 text-slate-300 border-white/20'}`}>UMUR: {calculateAge(p.tanggalLahir)}</span>}
                                                             </div>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <span className="text-xs text-slate-500 font-medium">{p.kategori} <span className="mx-1 text-slate-300">•</span> {p.cabor}</span>
-                                                                {p.id_registrasi && <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">{p.id_registrasi}</span>}
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <span className="text-xs text-slate-400 font-bold tracking-wider">{p.kategori} <span className="mx-1 text-slate-600">•</span> {p.cabor}</span>
+                                                                {p.id_registrasi && <span className="text-[9px] font-black text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">{p.id_registrasi}</span>}
                                                             </div>
-                                                            <div className="text-xs text-slate-400 font-mono mt-0.5 normal-case">NIK. {p.nik}</div>
+                                                            <div className="text-xs text-slate-500 font-mono mt-1 normal-case font-bold">NIK. {p.nik}</div>
                                                         </td>
-                                                        <td className="px-6 py-4 font-bold text-slate-600 text-xs tracking-wide">{p.regency}</td>
-                                                        <td className="px-6 py-4"><StatusBadge status={p.status} /></td>
-                                                        <td className="px-6 py-4 text-right">
-                                                            <button onClick={() => { setSelectedParticipant(p); setVerifikasiModalOpen(true); }} className={`px-4 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 ml-auto shadow-sm group-hover:-translate-y-0.5 tracking-wide ${p.status === 'Pending' ? 'text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white border-blue-200' : 'text-slate-600 bg-white hover:bg-slate-100 border-slate-200'}`}>
+                                                        <td className="px-6 py-5 font-black text-slate-300 text-xs tracking-widest">{p.regency}</td>
+                                                        <td className="px-6 py-5"><StatusBadge status={p.status} /></td>
+                                                        <td className="px-6 py-5 text-right">
+                                                            <button onClick={() => { setSelectedParticipant(p); setVerifikasiModalOpen(true); }} className={`px-5 py-2.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 ml-auto shadow-sm group-hover:-translate-y-0.5 tracking-widest uppercase ${p.status === 'Pending' ? 'text-white bg-blue-600 hover:bg-blue-500 border-blue-500 shadow-blue-500/20' : 'text-slate-400 bg-white/5 hover:bg-white/10 hover:text-white border-white/10'}`}>
                                                                 <EyeIcon className="w-4 h-4"/> {p.status === 'Pending' ? 'Periksa' : 'Tinjau Detail'}
                                                             </button>
                                                         </td>
@@ -1219,22 +1222,22 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                     )}
 
                     {activeMenu === 'cetak' && (
-                        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/60 overflow-hidden flex flex-col h-full">
+                        <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col h-full">
                             
-                            <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center bg-slate-50/80 shrink-0 print:hidden gap-4">
+                            <div className="p-6 border-b border-white/10 flex flex-col md:flex-row justify-between items-center bg-transparent shrink-0 print:hidden gap-6">
                                 <div>
-                                    <p className="font-bold text-slate-600 text-sm">Terdapat <span className="text-teal-600 text-xl mx-1">{printCount}</span> dari {approvedParticipants.length} peserta siap cetak.</p>
-                                    <div className="flex gap-2 mt-2">
-                                        <button onClick={handleIncludeAll} className="text-xs font-bold bg-teal-100 text-teal-700 px-3 py-1.5 rounded-lg hover:bg-teal-200 transition shadow-sm tracking-wide">Pilih Semua</button>
-                                        <button onClick={handleExcludeAll} className="text-xs font-bold bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-300 transition shadow-sm tracking-wide">Batal Pilih Semua</button>
+                                    <p className="font-bold text-slate-400 text-sm tracking-wide">Terdapat <span className="text-teal-400 text-xl mx-1 font-black">{printCount}</span> dari {approvedParticipants.length} peserta siap cetak.</p>
+                                    <div className="flex gap-3 mt-3">
+                                        <button onClick={handleIncludeAll} className="text-xs font-black bg-teal-500/20 border border-teal-500/30 text-teal-400 px-4 py-2 rounded-xl hover:bg-teal-500/30 transition-all shadow-sm tracking-widest uppercase">Pilih Semua</button>
+                                        <button onClick={handleExcludeAll} className="text-xs font-black bg-white/10 border border-white/10 text-slate-300 px-4 py-2 rounded-xl hover:bg-white/20 transition-all shadow-sm tracking-widest uppercase">Batal Pilih Semua</button>
                                     </div>
                                 </div>
-                                <button onClick={() => { try { window.print() } catch(e) { console.error("Print blocked in sandbox"); } }} disabled={printCount === 0} className="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-xl font-bold shadow-lg shadow-teal-500/30 hover:from-teal-600 hover:to-emerald-600 transition-all hover:-translate-y-0.5 flex items-center gap-2 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed tracking-wide text-sm">
+                                <button onClick={() => { try { window.print() } catch(e) { console.error("Print blocked in sandbox"); } }} disabled={printCount === 0} className="px-8 py-4 bg-teal-600 text-white rounded-2xl font-black shadow-lg shadow-teal-600/30 hover:bg-teal-500 transition-all hover:-translate-y-1 flex items-center gap-3 disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed tracking-widest text-sm uppercase border border-teal-500">
                                     <PrinterIcon className="w-5 h-5" /> Jalankan Mesin Cetak
                                 </button>
                             </div>
                             
-                            <div className="p-8 overflow-y-auto flex-1 bg-slate-200/50 print:bg-white flex flex-wrap gap-8 justify-center content-start border-t border-slate-200/50">
+                            <div className="p-8 overflow-y-auto flex-1 bg-black/20 print:bg-white flex flex-wrap gap-8 justify-center content-start border-t border-white/5">
                                 <style>{`
                                     @media print {
                                         @page { margin: 10mm; }
@@ -1249,7 +1252,7 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                                 `}</style>
                                 <div className="print-container flex flex-wrap gap-6 justify-center w-full">
                                     {approvedParticipants.length === 0 ? (
-                                        <div className="text-center py-20 text-slate-400 font-bold print:hidden">Tidak ada ID Card yang memenuhi syarat cetak.</div>
+                                        <div className="text-center py-20 text-slate-500 font-bold print:hidden">Tidak ada ID Card yang memenuhi syarat cetak.</div>
                                     ) : (
                                         approvedParticipants.map(p => {
                                             const isExcluded = excludedFromPrint.includes(p.id);
@@ -1259,9 +1262,9 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                                                 <div 
                                                     key={p.id} 
                                                     style={hasCustomBg ? { backgroundImage: `url(${bgImages[p.kategori]})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                                                    className={`w-[90mm] h-[130mm] ${hasCustomBg ? 'bg-transparent border-none' : 'bg-white border-slate-200'} rounded-[1.25rem] shadow-2xl shadow-slate-300/60 overflow-hidden flex flex-col relative shrink-0 transition-all duration-300 ${isExcluded ? 'opacity-40 grayscale scale-95 print:hidden' : 'print:shadow-none print:rounded-none'} print:border-slate-800 border`}
+                                                    className={`w-[90mm] h-[130mm] ${hasCustomBg ? 'bg-transparent border-none' : 'bg-white border-slate-200'} rounded-[1.25rem] shadow-2xl shadow-black/50 overflow-hidden flex flex-col relative shrink-0 transition-all duration-300 ${isExcluded ? 'opacity-30 grayscale scale-95 print:hidden' : 'print:shadow-none print:rounded-none'} print:border-slate-800 border`}
                                                 >
-                                                    <div className="absolute top-3 right-3 z-50 print:hidden bg-white/90 p-1.5 rounded-lg shadow-sm backdrop-blur-sm border border-slate-200">
+                                                    <div className="absolute top-3 right-3 z-50 print:hidden bg-black/50 p-2 rounded-xl shadow-lg backdrop-blur-md border border-white/20">
                                                         <input type="checkbox" checked={!isExcluded} onChange={() => handleTogglePrint(p.id)} className="w-5 h-5 accent-teal-500 cursor-pointer block" />
                                                     </div>
                                                     
@@ -1315,40 +1318,41 @@ function AdminDashboard({ data, onLogout, onUpdateStatus, onResetPassword, logos
                     )}
 
                     {activeMenu === 'akun' && (
-                        <div className="flex flex-col h-full gap-6">
-                            <div className="bg-gradient-to-r from-indigo-900 to-indigo-800 rounded-2xl shadow-xl shadow-indigo-900/20 flex flex-col sm:flex-row justify-between items-center p-6 border border-indigo-700/50 shrink-0">
-                                <div className="text-white mb-4 sm:mb-0">
-                                    <h3 className="font-extrabold text-lg flex items-center gap-2 tracking-wide"><ShieldIcon className="w-5 h-5 text-amber-400"/> Akun Admin Provinsi</h3>
-                                    <p className="text-indigo-200 text-xs mt-1 font-medium normal-case">Ubah kata sandi akses utama Administrator Anda untuk keamanan ekstra.</p>
+                        <div className="flex flex-col h-full gap-8">
+                            <div className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-[2rem] shadow-2xl shadow-orange-900/20 flex flex-col sm:flex-row justify-between items-center p-8 md:p-10 border border-orange-500/50 shrink-0 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full filter blur-[40px] -translate-y-1/2 translate-x-1/4"></div>
+                                <div className="text-white mb-6 sm:mb-0 relative z-10">
+                                    <h3 className="font-black text-2xl flex items-center gap-3 tracking-tight"><ShieldIcon className="w-8 h-8 text-amber-300"/> Akun Admin Provinsi</h3>
+                                    <p className="text-orange-100 text-sm mt-2 font-medium normal-case tracking-wide">Ubah kata sandi akses utama Administrator Anda untuk keamanan ekstra.</p>
                                 </div>
-                                <button onClick={() => setIsAdminPasswordModalOpen(true)} className="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition-all border border-white/20 hover:-translate-y-0.5 shadow-sm text-sm tracking-wide">
+                                <button onClick={() => setIsAdminPasswordModalOpen(true)} className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black transition-all border border-white/20 hover:-translate-y-1 shadow-lg text-sm tracking-widest uppercase relative z-10">
                                     Ubah Sandi Admin
                                 </button>
                             </div>
 
-                            <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/40 border border-slate-200/60 flex flex-col flex-1 overflow-hidden">
-                                <div className="p-5 border-b border-slate-100 bg-slate-50/80">
-                                    <h3 className="font-bold text-slate-700 tracking-wide">Otoritas Akses Wilayah (Operator)</h3>
-                                    <p className="text-xs text-slate-500 mt-1 normal-case">Kembalikan akses masuk ke sandi bawaan (default) jika operator lupa kata sandinya.</p>
+                            <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/10 flex flex-col flex-1 overflow-hidden">
+                                <div className="p-6 border-b border-white/10 bg-transparent">
+                                    <h3 className="font-black text-white text-lg tracking-widest uppercase">Otoritas Akses Wilayah (Operator)</h3>
+                                    <p className="text-xs text-slate-400 mt-1 normal-case font-medium">Kembalikan akses masuk ke sandi bawaan (default) jika operator lupa kata sandinya.</p>
                                 </div>
-                                <div className="overflow-y-auto flex-1">
+                                <div className="overflow-y-auto flex-1 p-2">
                                     <table className="w-full text-left text-sm">
-                                        <thead className="bg-white text-slate-500 text-[10px] tracking-wider border-b border-slate-200 sticky top-0 z-10">
+                                        <thead className="bg-[#020617]/80 backdrop-blur-md text-slate-400 text-[10px] tracking-widest border-b border-white/10 sticky top-0 z-10">
                                             <tr>
-                                                <th className="px-6 py-4 font-bold">Wilayah Otoritas Operasional</th>
-                                                <th className="px-6 py-4 font-bold">Kata Sandi Standar (Default)</th>
-                                                <th className="px-6 py-4 font-bold text-right">Tindakan Sistem</th>
+                                                <th className="px-6 py-5 font-bold uppercase">Wilayah Otoritas Operasional</th>
+                                                <th className="px-6 py-5 font-bold uppercase">Kata Sandi Standar (Default)</th>
+                                                <th className="px-6 py-5 font-bold text-right uppercase">Tindakan Sistem</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-50">
+                                        <tbody className="divide-y divide-white/5">
                                             {REGIONS.filter(r => r !== 'Semua Wilayah').map(r => (
-                                                <tr key={r} className="hover:bg-slate-50/50 transition-colors">
-                                                    <td className="px-6 py-4 font-bold text-slate-800">{r}</td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg inline-block border border-indigo-100 shadow-sm normal-case">{passwords[r]}</div>
+                                                <tr key={r} className="hover:bg-white/5 transition-colors">
+                                                    <td className="px-6 py-5 font-extrabold text-white text-base">{r}</td>
+                                                    <td className="px-6 py-5">
+                                                        <div className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-lg inline-block border border-blue-500/20 shadow-sm normal-case tracking-wider">{passwords[r]}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button onClick={() => handleResetWithToast(r)} className="px-4 py-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg transition-all hover:shadow-sm hover:-translate-y-0.5 tracking-wide">Reset Sandi</button>
+                                                    <td className="px-6 py-5 text-right">
+                                                        <button onClick={() => handleResetWithToast(r)} className="px-5 py-2.5 text-xs font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500 hover:text-white rounded-xl transition-all hover:shadow-lg hover:-translate-y-0.5 tracking-widest uppercase">Reset Sandi</button>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -1372,16 +1376,22 @@ function ChangeAdminPasswordModal({ onClose, onChangePassword }) {
     const [msg, setMsg] = useState('');
     const handleSubmit = (e) => { e.preventDefault(); if(!newPassword) return; onChangePassword(newPassword); setMsg("Sandi Admin berhasil diubah!"); setTimeout(() => onClose(), 1500); };
     return (
-        <div className="fixed inset-0 uppercase bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden transform transition-all scale-100 border border-white/20">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-amber-600 to-orange-500 text-white">
-                    <h2 className="font-bold text-lg flex items-center gap-2 tracking-wide"><ShieldIcon className="w-5 h-5"/> Sandi Utama</h2>
-                    <button onClick={onClose} className="text-white/60 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-full"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <div className="fixed inset-0 uppercase bg-[#020617]/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+            <div className="bg-[#0a1526] rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden transform transition-all scale-100 border border-white/10">
+                <div className="p-8 border-b border-white/10 flex justify-between items-center bg-white/5 text-white">
+                    <h2 className="font-black text-xl flex items-center gap-3 tracking-widest"><ShieldIcon className="w-6 h-6 text-amber-400"/> Sandi Utama</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-5 bg-slate-50/50">
-                    <div><label className="block text-xs font-bold text-slate-600 mb-2 tracking-wide">Kata Sandi Baru</label><input type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="w-full normal-case p-3.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 font-medium outline-none shadow-sm transition-all" placeholder="Ketik password baru admin..." /></div>
-                    {msg && <p className="text-emerald-500 text-xs font-bold">{msg}</p>}
-                    <div className="pt-2 flex justify-end gap-3"><button type="button" onClick={onClose} className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors text-sm tracking-wide">Batal</button><button type="submit" className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all hover:-translate-y-0.5 text-sm tracking-wide">Ubah Sandi</button></div>
+                <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-transparent">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-3 tracking-widest">Kata Sandi Baru</label>
+                        <input type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required className="w-full normal-case p-4 border border-white/10 bg-white/5 rounded-xl focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 font-bold outline-none shadow-sm transition-all text-white" placeholder="Ketik password baru admin..." />
+                    </div>
+                    {msg && <p className="text-emerald-400 text-xs font-bold">{msg}</p>}
+                    <div className="pt-4 flex justify-end gap-3">
+                        <button type="button" onClick={onClose} className="px-6 py-3 text-slate-400 font-bold hover:bg-white/5 border border-transparent hover:border-white/10 rounded-xl transition-colors text-sm tracking-widest">BATAL</button>
+                        <button type="submit" className="px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white font-black rounded-xl shadow-lg shadow-amber-600/20 transition-all hover:-translate-y-1 text-sm tracking-widest border border-amber-500">UBAH SANDI</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -1399,86 +1409,90 @@ function VerifikasiModal({ participant, onClose, onUpdateStatus }) {
     const handleApprove = () => { onUpdateStatus(participant.id, 'Approved'); onClose(); };
 
     return (
-        <div className="fixed inset-0 uppercase bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl w-full max-w-6xl h-[95vh] shadow-2xl flex flex-col overflow-hidden border border-white/20">
-                <div className="p-6 bg-gradient-to-r from-indigo-900 via-blue-900 to-cyan-800 text-white flex justify-between items-center shrink-0 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/4"></div>
-                    <div className="flex items-center gap-4 relative z-10">
-                        <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm hidden sm:block"><EyeIcon className="w-6 h-6 text-cyan-300" /></div>
+        <div className="fixed inset-0 uppercase bg-[#020617]/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in duration-200">
+            <div className="bg-[#0a1526] rounded-[2.5rem] w-full max-w-6xl h-[95vh] shadow-2xl flex flex-col overflow-hidden border border-white/10 relative">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full filter blur-[80px] pointer-events-none"></div>
+                
+                <div className="p-6 bg-white/5 border-b border-white/10 flex justify-between items-center shrink-0 relative z-10">
+                    <div className="flex items-center gap-5">
+                        <div className="bg-blue-500/20 border border-blue-500/30 p-3 rounded-2xl backdrop-blur-sm hidden sm:block"><EyeIcon className="w-6 h-6 text-blue-400" /></div>
                         <div>
-                            <h2 className="font-extrabold text-lg tracking-tight flex items-center gap-2">Validasi Berkas Fisik {participant.id_registrasi && <span className="bg-white/20 text-[10px] px-2 py-0.5 rounded-full font-mono tracking-widest">{participant.id_registrasi}</span>}</h2>
-                            <p className="text-cyan-200 text-xs font-medium mt-0.5 normal-case">Pemeriksaan manual data operator dan lampiran digital.</p>
+                            <h2 className="font-extrabold text-xl text-white tracking-tight flex items-center gap-3">
+                                Validasi Berkas Fisik 
+                                {participant.id_registrasi && <span className="bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] px-3 py-1 rounded-full font-mono tracking-widest">{participant.id_registrasi}</span>}
+                            </h2>
+                            <p className="text-slate-400 text-xs font-medium mt-1 normal-case tracking-wide">Pemeriksaan manual data operator dan lampiran digital.</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="relative z-10 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">&times;</button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 p-2.5 rounded-full transition-all">&times;</button>
                 </div>
                 
-                <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-slate-50/50">
-                    <div className="w-full md:w-5/12 bg-white p-6 md:p-8 border-r border-slate-200/60 overflow-y-auto shadow-sm z-10">
-                        <div className="flex flex-col xl:flex-row items-center xl:items-start gap-5 mb-8 pb-8 border-b border-slate-100 text-center xl:text-left">
-                            <div className="w-28 h-36 bg-slate-100 border-4 border-white shadow-lg flex items-center justify-center rounded-xl shrink-0 overflow-hidden">
-                                {participant.foto_url ? <img src={participant.foto_url} alt="Foto" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} /> : <span className="text-xs text-slate-400 font-bold tracking-widest">FOTO</span>}
+                <div className="flex-1 overflow-hidden flex flex-col md:flex-row relative z-10">
+                    <div className="w-full md:w-5/12 bg-white/5 backdrop-blur-md p-6 md:p-10 border-r border-white/10 overflow-y-auto shadow-sm">
+                        <div className="flex flex-col xl:flex-row items-center xl:items-start gap-6 mb-10 pb-10 border-b border-white/10 text-center xl:text-left">
+                            <div className="w-32 h-40 bg-[#020617] border-4 border-white/10 shadow-2xl flex items-center justify-center rounded-[1.5rem] shrink-0 overflow-hidden relative">
+                                {participant.foto_url ? <img src={participant.foto_url} alt="Foto" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} /> : <span className="text-xs text-slate-500 font-bold tracking-widest">FOTO</span>}
                             </div>
                             <div className="pt-2">
-                                <div className="inline-block px-3 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-black tracking-widest rounded-full mb-3">{participant.regency}</div>
-                                <h3 className="font-black text-2xl text-slate-900 leading-none mb-2">{participant.nama}</h3>
-                                <p className="text-sm font-mono font-bold text-slate-500 mb-4 bg-slate-100 px-2 py-1 rounded inline-block normal-case">NIK. {participant.nik || 'Tidak Tersedia'}</p>
+                                <div className="inline-block px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black tracking-widest rounded-full mb-4">{participant.regency}</div>
+                                <h3 className="font-black text-3xl text-white leading-tight mb-3 tracking-tight">{participant.nama}</h3>
+                                <p className="text-sm font-mono font-bold text-slate-400 mb-5 bg-black/20 border border-white/5 px-3 py-1.5 rounded-lg inline-block normal-case">NIK. {participant.nik || 'Tidak Tersedia'}</p>
                                 <div><StatusBadge status={participant.status} /></div>
                             </div>
                         </div>
                         
-                        <h4 className="font-bold text-xs text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg tracking-widest mb-4 inline-block">Data Input Form</h4>
-                        <div className="bg-slate-50/80 border border-slate-100 p-4 rounded-2xl">
+                        <h4 className="font-black text-xs text-blue-400 bg-blue-500/10 border border-blue-500/20 px-4 py-2 rounded-xl tracking-widest mb-5 inline-block uppercase">Data Input Form</h4>
+                        <div className="bg-black/20 border border-white/5 p-6 rounded-[2rem] shadow-inner">
                             <InfoRow label="Kategori">{participant.kategori}</InfoRow>
                             <InfoRow label="Cabor/Posisi">{participant.cabor}</InfoRow>
                             <InfoRow label="Kelamin">{participant.jenisKelamin}</InfoRow>
                             <InfoRow label="Lahir">
                                 {participant.tempatLahir || '-'}, {participant.tanggalLahir || '-'}
-                                {participant.tanggalLahir && <span className={`ml-2 inline-block px-2 py-0.5 font-black rounded text-[10px] ${participant.kategori === 'Olahragawan' && new Date(participant.tanggalLahir) < new Date('2009-01-01') ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700'}`}>Usia: {calculateAge(participant.tanggalLahir)} THN</span>}
+                                {participant.tanggalLahir && <span className={`ml-3 inline-block px-2.5 py-1 font-black rounded-lg text-[10px] tracking-wider border ${participant.kategori === 'Olahragawan' && new Date(participant.tanggalLahir) < new Date('2009-01-01') ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>Usia: {calculateAge(participant.tanggalLahir)} THN</span>}
                             </InfoRow>
                             {participant.kategori === 'Olahragawan' && (
-                                <><div className="my-2 border-t border-slate-200 border-dashed"></div><InfoRow label="Sekolah">{participant.asalSekolah}</InfoRow><InfoRow label="Kelas">{participant.kelas}</InfoRow><InfoRow label="NISN/NPSN" isMono>{`${participant.nisn || '-'} / ${participant.npsn || '-'}`}</InfoRow><InfoRow label="Klub/Sentra">{participant.asalSentra === 'KLUB' ? participant.namaKlub : participant.asalSentra}</InfoRow></>
+                                <><div className="my-3 border-t border-white/5 border-dashed"></div><InfoRow label="Sekolah">{participant.asalSekolah}</InfoRow><InfoRow label="Kelas">{participant.kelas}</InfoRow><InfoRow label="NISN/NPSN" isMono>{`${participant.nisn || '-'} / ${participant.npsn || '-'}`}</InfoRow><InfoRow label="Klub/Sentra">{participant.asalSentra === 'KLUB' ? participant.namaKlub : participant.asalSentra}</InfoRow></>
                             )}
                             {participant.kategori === 'Pelatih' && (
-                                <><div className="my-2 border-t border-slate-200 border-dashed"></div><InfoRow label="Lisensi">{participant.lisensi}</InfoRow></>
+                                <><div className="my-3 border-t border-white/5 border-dashed"></div><InfoRow label="Lisensi">{participant.lisensi}</InfoRow></>
                             )}
                             {(participant.kategori === 'Olahragawan' || participant.kategori === 'Pelatih') && (
-                                <><div className="my-2 border-t border-slate-200 border-dashed"></div><InfoRow label="BPJS Kes" isMono>{participant.bpjsKes}</InfoRow><InfoRow label="BPJS Naker" isMono>{participant.bpjsTk}</InfoRow></>
+                                <><div className="my-3 border-t border-white/5 border-dashed"></div><InfoRow label="BPJS Kes" isMono>{participant.bpjsKes}</InfoRow><InfoRow label="BPJS Naker" isMono>{participant.bpjsTk}</InfoRow></>
                             )}
                         </div>
                     </div>
                     
-                    <div className="w-full md:w-7/12 flex flex-col overflow-hidden">
-                        <div className="flex-1 p-6 md:p-8 overflow-y-auto">
-                            <h4 className="font-bold text-slate-800 mb-5 flex justify-between items-center tracking-wide">Arsip Digital <span className="text-[10px] font-bold bg-slate-200 text-slate-500 px-3 py-1 rounded-full tracking-wider">Simulasi Berkas</span></h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 content-start">
+                    <div className="w-full md:w-7/12 flex flex-col overflow-hidden bg-transparent">
+                        <div className="flex-1 p-6 md:p-10 overflow-y-auto">
+                            <h4 className="font-black text-white mb-6 flex justify-between items-center tracking-widest text-lg uppercase">Arsip Digital <span className="text-[10px] font-bold bg-white/10 text-slate-300 border border-white/10 px-4 py-1.5 rounded-full tracking-wider">Simulasi Berkas</span></h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 content-start">
                                 {docsToVerify.map((doc, idx) => (
-                                    <div key={doc.id} className="p-4 border border-slate-200/70 bg-white rounded-2xl flex items-start gap-4 hover:shadow-md hover:border-indigo-200 transition-all cursor-pointer group">
-                                        <div className="p-2.5 bg-blue-50 text-blue-500 rounded-xl group-hover:bg-indigo-500 group-hover:text-white transition-colors shrink-0 shadow-sm"><FileUpIcon className="w-5 h-5" /></div>
+                                    <div key={doc.id} className="p-5 border border-white/10 bg-white/5 backdrop-blur-md rounded-[1.5rem] flex items-start gap-4 hover:shadow-lg hover:bg-white/10 transition-all cursor-pointer group">
+                                        <div className="p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0 shadow-sm"><FileUpIcon className="w-6 h-6" /></div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-500 tracking-widest mb-1">Doc {idx + 1}</p>
-                                            <p className="text-xs font-bold text-slate-800 leading-snug group-hover:text-indigo-700 transition-colors">{doc.label}</p>
-                                            {participant[doc.id + '_url'] ? <a href={participant[doc.id + '_url']} target="_blank" rel="noopener noreferrer" className="text-[10px] text-indigo-600 font-black mt-2 flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-600 hover:text-white px-2 py-1 rounded transition-all w-fit normal-case"><EyeIcon className="w-3.5 h-3.5"/> LIHAT DOKUMEN</a> : <p className="text-[10px] text-rose-500 font-bold mt-2 flex items-center gap-1 opacity-70"><AlertCircleIcon className="w-3 h-3"/> BELUM ADA FILE</p>}
+                                            <p className="text-[10px] font-bold text-slate-500 tracking-widest mb-1.5">Doc {idx + 1}</p>
+                                            <p className="text-xs font-black text-white leading-snug tracking-wide">{doc.label}</p>
+                                            {participant[doc.id + '_url'] ? <a href={participant[doc.id + '_url']} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-400 font-black mt-3 flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg transition-all w-fit normal-case tracking-widest"><EyeIcon className="w-3.5 h-3.5"/> LIHAT DOKUMEN</a> : <p className="text-[10px] text-rose-400 font-bold mt-3 flex items-center gap-1.5 opacity-80"><AlertCircleIcon className="w-3.5 h-3.5"/> BELUM ADA FILE</p>}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                         
-                        <div className="p-6 md:p-8 bg-white border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] shrink-0 z-20 relative">
+                        <div className="p-6 md:p-8 bg-white/5 backdrop-blur-xl border-t border-white/10 shrink-0 z-20 relative shadow-[0_-20px_40px_rgba(0,0,0,0.3)]">
                             {isRejecting ? (
                                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-                                    <label className="block text-sm font-black text-rose-700 mb-2 tracking-wide">Alasan Penolakan / Permintaan Revisi:</label>
-                                    {errorMsg && <p className="text-rose-500 text-xs font-bold mb-2">{errorMsg}</p>}
-                                    <textarea className="w-full normal-case p-4 border border-rose-200 bg-rose-50/50 rounded-xl focus:ring-2 focus:ring-rose-500/50 focus:bg-white outline-none text-sm transition-all" rows="3" placeholder="Tuliskan secara spesifik dokumen apa yang kurang atau salah..." value={catatanRevisi} onChange={(e) => {setCatatanRevisi(e.target.value); setErrorMsg('');}} autoFocus></textarea>
-                                    <div className="flex gap-3 justify-end mt-4"><button onClick={() => setIsRejecting(false)} className="px-5 py-2.5 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors tracking-wide text-sm">Batal</button><button onClick={handleReject} className="px-6 py-2.5 bg-rose-600 text-white font-bold rounded-xl shadow-lg shadow-rose-500/30 hover:bg-rose-700 flex items-center gap-2 hover:-translate-y-0.5 transition-all tracking-wide text-sm">Kirim Notifikasi Revisi</button></div>
+                                    <label className="block text-sm font-black text-rose-400 mb-3 tracking-widest uppercase">Alasan Penolakan / Permintaan Revisi:</label>
+                                    {errorMsg && <p className="text-rose-400 bg-rose-500/10 p-2 rounded-lg text-xs font-bold mb-3 border border-rose-500/20">{errorMsg}</p>}
+                                    <textarea className="w-full normal-case p-5 border border-rose-500/30 bg-rose-500/5 rounded-2xl focus:ring-4 focus:ring-rose-500/20 focus:border-rose-500 outline-none text-sm transition-all text-white font-medium" rows="3" placeholder="Tuliskan secara spesifik dokumen apa yang kurang atau salah..." value={catatanRevisi} onChange={(e) => {setCatatanRevisi(e.target.value); setErrorMsg('');}} autoFocus></textarea>
+                                    <div className="flex gap-4 justify-end mt-5"><button onClick={() => setIsRejecting(false)} className="px-6 py-3.5 text-slate-400 font-bold hover:bg-white/10 border border-transparent hover:border-white/10 rounded-xl transition-all tracking-widest text-sm uppercase">Batal</button><button onClick={handleReject} className="px-8 py-3.5 bg-rose-600 text-white font-black rounded-xl shadow-lg shadow-rose-600/30 hover:bg-rose-500 flex items-center gap-2 hover:-translate-y-1 transition-all tracking-widest text-sm uppercase border border-rose-500">Kirim Notifikasi Revisi</button></div>
                                 </div>
                             ) : (
                                 <div>
-                                    <p className="text-sm font-extrabold text-slate-800 mb-4 tracking-widest text-center">Keputusan Verifikasi Akhir</p>
+                                    <p className="text-xs font-black text-slate-400 mb-4 tracking-[0.2em] text-center uppercase">Keputusan Verifikasi Akhir</p>
                                     <div className="flex gap-4">
-                                        <button onClick={() => setIsRejecting(true)} className="flex-1 py-3.5 bg-white border-2 border-rose-500 text-rose-600 font-bold rounded-xl hover:bg-rose-50 hover:-translate-y-0.5 shadow-sm transition-all flex justify-center items-center gap-2 tracking-wide text-sm"><AlertCircleIcon className="w-5 h-5" /> Tolak & Revisi</button>
-                                        <button onClick={handleApprove} className="flex-1 py-3.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-bold rounded-xl hover:from-emerald-600 hover:to-green-700 shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 transition-all flex justify-center items-center gap-2 tracking-wide text-sm"><CheckCircleIcon className="w-5 h-5" /> Validasi & Setujui Dokumen</button>
+                                        <button onClick={() => setIsRejecting(true)} className="flex-1 py-4 bg-transparent border-2 border-rose-500 text-rose-500 font-black rounded-[1.2rem] hover:bg-rose-500/10 hover:-translate-y-1 shadow-lg shadow-rose-500/10 transition-all flex justify-center items-center gap-3 tracking-widest text-sm uppercase"><AlertCircleIcon className="w-5 h-5" /> Tolak & Revisi</button>
+                                        <button onClick={handleApprove} className="flex-1 py-4 bg-emerald-600 text-white font-black rounded-[1.2rem] hover:bg-emerald-500 shadow-lg shadow-emerald-600/30 hover:-translate-y-1 transition-all flex justify-center items-center gap-3 tracking-widest text-sm uppercase border border-emerald-500"><CheckCircleIcon className="w-5 h-5" /> Validasi & Setujui Dokumen</button>
                                     </div>
                                 </div>
                             )}
@@ -1492,27 +1506,28 @@ function VerifikasiModal({ participant, onClose, onUpdateStatus }) {
 
 function StatCard({ title, value, type }) {
     const styling = {
-        neutral: 'bg-white border-slate-200/60 shadow-indigo-500/5',
-        success: 'bg-gradient-to-br from-emerald-50/50 to-white border-emerald-100 shadow-emerald-500/5',
-        warning: 'bg-gradient-to-br from-amber-50/50 to-white border-amber-100 shadow-amber-500/5',
-        danger: 'bg-gradient-to-br from-rose-50/50 to-white border-rose-100 shadow-rose-500/5'
+        neutral: 'border-blue-500/20 group-hover:border-blue-500/40 shadow-blue-500/10',
+        success: 'border-emerald-500/20 group-hover:border-emerald-500/40 shadow-emerald-500/10',
+        warning: 'border-amber-500/20 group-hover:border-amber-500/40 shadow-amber-500/10',
+        danger: 'border-rose-500/20 group-hover:border-rose-500/40 shadow-rose-500/10'
     };
-    const textColors = { neutral: 'text-indigo-900', success: 'text-emerald-700', warning: 'text-amber-700', danger: 'text-rose-700' };
+    const textColors = { neutral: 'text-blue-400', success: 'text-emerald-400', warning: 'text-amber-400', danger: 'text-rose-400' };
+    const bgGlow = { neutral: 'bg-blue-500/20', success: 'bg-emerald-500/20', warning: 'bg-amber-500/20', danger: 'bg-rose-500/20' };
 
     return (
-        <div className={`p-6 rounded-2xl border shadow-lg ${styling[type]} relative overflow-hidden transition-all hover:shadow-xl hover:-translate-y-0.5`}>
-            <div className={`absolute top-0 left-0 w-1 h-full ${type === 'neutral' ? 'bg-indigo-400' : type === 'success' ? 'bg-emerald-400' : type === 'warning' ? 'bg-amber-400' : 'bg-rose-400'}`}></div>
-            <p className="text-slate-500 text-[10px] font-bold tracking-widest mb-1.5">{title}</p>
-            <p className={`text-4xl font-black tracking-tight ${textColors[type]}`}>{value}</p>
+        <div className={`p-6 rounded-[2rem] bg-white/5 backdrop-blur-xl border shadow-xl ${styling[type]} relative overflow-hidden transition-all duration-500 hover:-translate-y-1 group`}>
+            <div className={`absolute -right-6 -top-6 w-24 h-24 ${bgGlow[type]} blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700`}></div>
+            <p className="text-slate-400 text-xs font-bold tracking-widest uppercase mb-2 relative z-10">{title}</p>
+            <p className={`text-5xl font-black tracking-tight ${textColors[type]} relative z-10 drop-shadow-md`}>{value}</p>
         </div>
     );
 }
 
 function StatusBadge({ status }) {
     const badges = {
-        Approved: <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider bg-emerald-100/80 text-emerald-700 border border-emerald-200"><CheckCircleIcon className="w-3.5 h-3.5"/> Berkas Disetujui</span>,
-        Pending: <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider bg-amber-100/80 text-amber-700 border border-amber-200"><ClockIcon className="w-3.5 h-3.5 animate-pulse"/> Menunggu Verifikasi</span>,
-        Revision: <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider bg-rose-100/80 text-rose-700 border border-rose-200"><AlertCircleIcon className="w-3.5 h-3.5"/> Butuh Revisi Form</span>
+        Approved: <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><CheckCircleIcon className="w-3.5 h-3.5"/> Berkas Disetujui</span>,
+        Pending: <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30"><ClockIcon className="w-3.5 h-3.5 animate-pulse"/> Menunggu Verifikasi</span>,
+        Revision: <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/30"><AlertCircleIcon className="w-3.5 h-3.5"/> Butuh Revisi Form</span>
     };
     return badges[status] || <span>{status}</span>;
 }

@@ -603,6 +603,8 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
         if (!file) return;
 
         let fileToUpload = file;
+        
+        // 1. Cek apakah file adalah PDF
         if (file.type === 'application/pdf') {
             const fileSizeMB = file.size / 1024 / 1024;
             if (fileSizeMB > 1) {
@@ -610,15 +612,24 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                 setDocStatus(prev => ({ ...prev, [docId]: "GAGAL: PDF > 1MB" }));
                 return;
             }
+        // 2. Cek apakah file adalah Gambar (JPG/PNG dll)
         } else if (file.type.startsWith('image/')) {
             setDocStatus(prev => ({ ...prev, [docId]: "MENGOMPRES GAMBAR..." }));
             const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1920, useWebWorker: true };
             try {
                 fileToUpload = await imageCompression(file, options);
                 console.log(`Gambar dikompres: ${(file.size/1024).toFixed(0)}KB -> ${(fileToUpload.size/1024).toFixed(0)}KB`);
-            } catch (error) { console.error("Gagal kompres:", error); }
+            } catch (error) { 
+                console.error("Gagal kompres:", error); 
+            }
+        // 3. JIKA BUKAN PDF ATAU GAMBAR, TOLAK!
+        } else {
+            alert("GAGAL: Format file tidak didukung! Harap unggah Gambar (JPG/PNG) atau PDF.");
+            setDocStatus(prev => ({ ...prev, [docId]: "FORMAT TIDAK VALID" }));
+            return; 
         }
 
+        // 4. Proses Upload ke Firebase Storage
         setDocStatus(prev => ({ ...prev, [docId]: "SEDANG MENGUNGGAH..." }));
         try {
             const storageRef = ref(storage, `berkas/${DATABASE_ID}/${formData.nik || 'atlet'}/${docId}_${file.name}`);
@@ -631,7 +642,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
             setDocStatus(prev => ({ ...prev, [docId]: "GAGAL UNGGAH!" }));
         }
     };
-
+    
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isReadOnly || isSaving) return;

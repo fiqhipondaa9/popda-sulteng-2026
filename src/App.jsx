@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
@@ -79,6 +79,22 @@ const DEFAULT_PASSWORDS = {
     'Kab. Sigi': 'Sigi2026', 'Kab. Tojo Una-Una': 'Touna2026', 'Kab. Tolitoli': 'Tolitoli2026', 'Kota Palu': 'Palu2026'
 };
 
+const EMAIL_MAPPING = {
+    'Kab. Banggai': 'banggai@popda.com',
+    'Kab. Banggai Kepulauan': 'bangkep@popda.com',
+    'Kab. Banggai Laut': 'balut@popda.com',
+    'Kab. Buol': 'buol@popda.com',
+    'Kab. Donggala': 'donggala@popda.com',
+    'Kab. Morowali': 'morowali@popda.com',
+    'Kab. Morowali Utara': 'morut@popda.com',
+    'Kab. Parigi Moutong': 'parimo@popda.com',
+    'Kab. Poso': 'poso@popda.com',
+    'Kab. Sigi': 'sigi@popda.com',
+    'Kab. Tojo Una-Una': 'touna@popda.com',
+    'Kab. Tolitoli': 'tolitoli@popda.com',
+    'Kota Palu': 'palu@popda.com'
+};
+
 const REQUIRED_DOCS = [
     { id: 'sitenor', label: 'KARTU SITENOR', categories: ['Pelatih'] },
     { id: 'ktp_kia', label: 'KTP/KIA', categories: ['Olahragawan'] },
@@ -115,9 +131,8 @@ export default function App() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                } 
+                // KITA HAPUS signInAnonymously DI SINI! Pintu belakang sudah ditutup.
             } catch (e) {
                 console.error("Firebase Auth Error:", e);
             }
@@ -179,9 +194,14 @@ export default function App() {
         setView(role);
     };
 
-    const handleLogout = () => {
-        setCurrentUser(null);
-        setView('login');
+    const handleLogout = async () => {
+        try {
+            await signOut(auth); // Sekarang kita benar-benar logout dari Firebase
+            setCurrentUser(null);
+            setView('login');
+        } catch (error) {
+            console.error("Gagal logout:", error);
+        }
     };
 
     const handleSavePeserta = async (peserta) => {
@@ -275,17 +295,31 @@ function LoginScreen({ onLogin, passwords, adminPassword, onResetAdmin, logos })
         setTimeout(() => setSecretClick(0), 1000);
     };
 
-    const handleOperatorLogin = () => {
+    const handleOperatorLogin = async () => {
         if (!selectedRegency) return;
-        if (passwordInput === passwords[selectedRegency]) {
-            setLoginError(''); onLogin('operator', selectedRegency);
-        } else setLoginError('Kata sandi tidak sesuai!');
+        const emailToUse = EMAIL_MAPPING[selectedRegency]; // Ambil email dari kamus
+        
+        try {
+            // Minta Firebase memverifikasi email dan sandi
+            await signInWithEmailAndPassword(auth, emailToUse, passwordInput);
+            setLoginError(''); 
+            onLogin('operator', selectedRegency); // Jika sukses, masuk dashboard
+        } catch (error) {
+            console.error("Gagal Login Operator:", error);
+            setLoginError('Sandi salah atau akun tidak ditemukan!');
+        }
     };
 
-    const handleAdminLogin = () => {
-        if (adminPasswordInput === adminPassword) {
-            setLoginError(''); onLogin('admin');
-        } else setLoginError('Kata sandi Admin salah!');
+    const handleAdminLogin = async () => {
+        try {
+            // Minta Firebase memverifikasi email admin
+            await signInWithEmailAndPassword(auth, 'admin@popda.com', adminPasswordInput);
+            setLoginError(''); 
+            onLogin('admin');
+        } catch (error) {
+            console.error("Gagal Login Admin:", error);
+            setLoginError('Kata sandi Admin salah!');
+        }
     };
 
     const handleRecoverySubmit = () => {
@@ -642,7 +676,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
             setDocStatus(prev => ({ ...prev, [docId]: "GAGAL UNGGAH!" }));
         }
     };
-    
+
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isReadOnly || isSaving) return;

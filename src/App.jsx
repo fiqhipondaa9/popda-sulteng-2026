@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import imageCompression from 'browser-image-compression';
 
 // --- INISIALISASI FIREBASE CLOUD ---
@@ -73,10 +73,19 @@ const CABOR_LIST = [
 ];
 
 const DEFAULT_PASSWORDS = {
-    'Kab. Banggai': 'Banggai2026', 'Kab. Banggai Kepulauan': 'Bangkep2026', 'Kab. Banggai Laut': 'Balut2026',
-    'Kab. Buol': 'Buol2026', 'Kab. Donggala': 'Donggala2026', 'Kab. Morowali': 'Morowali2026',
-    'Kab. Morowali Utara': 'Morut2026', 'Kab. Parigi Moutong': 'Parimo2026', 'Kab. Poso': 'Poso2026',
-    'Kab. Sigi': 'Sigi2026', 'Kab. Tojo Una-Una': 'Touna2026', 'Kab. Tolitoli': 'Tolitoli2026', 'Kota Palu': 'Palu2026'
+    'Kab. Banggai': 'BGI-7#vX2',
+    'Kab. Banggai Kepulauan': 'BKP-4$kM9',
+    'Kab. Banggai Laut': 'BGL-2@pQ5',
+    'Kab. Buol': 'BUL-9*rW3',
+    'Kab. Donggala': 'DGL-5&tZ8',
+    'Kab. Morowali': 'MRW-3#mN6',
+    'Kab. Morowali Utara': 'MRU-8$cV4',
+    'Kab. Parigi Moutong': 'PRM-6@bJ7',
+    'Kab. Poso': 'PSO-2*hF9',
+    'Kab. Sigi': 'SGI-9&dL1',
+    'Kab. Tojo Una-Una': 'TJU-4#xY5',
+    'Kab. Tolitoli': 'TLI-7$zK3',
+    'Kota Palu': 'PLU-5@wR8'
 };
 
 const EMAIL_MAPPING = {
@@ -238,8 +247,29 @@ export default function App() {
     const handleDeletePeserta = async (id) => {
         if (!authUser) return;
         try {
+            // 1. Cari data peserta ini dulu untuk mendapatkan NIK-nya
+            const pesertaToDelete = pesertaList.find(p => p.id === id);
+            
+            // 2. Hapus dokumen di Firestore (teksnya)
             const docRef = doc(db, 'artifacts', DATABASE_ID, 'public', 'data', 'peserta', id.toString());
             await deleteDoc(docRef);
+
+            // 3. Hapus file fisiknya di Storage (Mencegah Ghost Files)
+            if (pesertaToDelete && pesertaToDelete.nik) {
+                // Loop semua jenis dokumen yang mungkin sudah diupload
+                REQUIRED_DOCS.forEach(async (docType) => {
+                    // Cek apakah ada URL-nya (artinya file pernah diupload)
+                    if (pesertaToDelete[docType.id + '_url']) {
+                        const fileRef = ref(storage, `berkas/${DATABASE_ID}/${pesertaToDelete.nik}/${docType.id}`);
+                        try {
+                            await deleteObject(fileRef);
+                        } catch (err) {
+                            // Abaikan error jika file tidak ditemukan di storage
+                            console.log(`File ${docType.id} tidak ditemukan untuk dihapus.`);
+                        }
+                    }
+                });
+            }
         } catch (error) {
             console.error("Gagal menghapus data di Firebase:", error);
         }
@@ -456,7 +486,7 @@ function OperatorDashboard({ user, data, onLogout, onSave, onDelete, onChangePas
                 </div>
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     <button className="w-full flex items-center gap-3 px-4 py-3.5 bg-blue-500/20 text-blue-100 rounded-xl font-semibold border border-blue-500/30 shadow-sm transition-all"><UsersIcon className="w-5 h-5 opacity-80 text-blue-400" /> Data Peserta</button>
-                    <button onClick={() => setIsPasswordModalOpen(true)} className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-all"><ShieldIcon className="w-5 h-5 opacity-80" /> Keamanan Akun</button>
+                {/*    <button onClick={() => setIsPasswordModalOpen(true)} className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl font-medium transition-all"><ShieldIcon className="w-5 h-5 opacity-80" /> Keamanan Akun</button> */}
                 </nav>
                 <div className="p-4 border-t border-white/10">
                     <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl font-medium transition-all"><LogOutIcon className="w-5 h-5" /> Keluar Sistem</button>
@@ -600,6 +630,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
     const [isSaving, setIsSaving] = useState(false); 
     const [errorMsg, setErrorMsg] = useState('');
     const [showDraftConfirm, setShowDraftConfirm] = useState(false);
+    const [tempUploadedFiles, setTempUploadedFiles] = useState([]);
     const isReadOnly = initialData?.status === 'Approved';
     const docsToShow = REQUIRED_DOCS.filter(doc => doc.categories.includes(formData.kategori));
 
@@ -666,8 +697,9 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
         // 4. Proses Upload ke Firebase Storage
         setDocStatus(prev => ({ ...prev, [docId]: "SEDANG MENGUNGGAH..." }));
         try {
-            const storageRef = ref(storage, `berkas/${DATABASE_ID}/${formData.nik || 'atlet'}/${docId}_${file.name}`);
+            const storageRef = ref(storage, `berkas/${DATABASE_ID}/${formData.nik || 'atlet'}/${docId}`);
             const snapshot = await uploadBytes(storageRef, fileToUpload);
+            setTempUploadedFiles(prev => [...prev, storageRef]);
             const downloadURL = await getDownloadURL(snapshot.ref);
             setFormData(prev => ({ ...prev, [docId + '_url']: downloadURL }));
             setDocStatus(prev => ({ ...prev, [docId]: `✓ BERHASIL DIUNGGAH` }));
@@ -675,6 +707,21 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
             console.error("GAGAL UPLOAD:", error);
             setDocStatus(prev => ({ ...prev, [docId]: "GAGAL UNGGAH!" }));
         }
+    };
+
+    const handleCancelModal = () => {
+        // Jika ada file yang terlanjur diunggah di sesi ini, HAPUS dari Storage!
+        if (tempUploadedFiles.length > 0) {
+            tempUploadedFiles.forEach(async (fileRef) => {
+                try {
+                    await deleteObject(fileRef);
+                } catch (error) {
+                    console.log("Gagal menghapus ghost file");
+                }
+            });
+        }
+        // Setelah dihapus, tutup modalnya
+        onClose();
     };
 
     const handleSubmit = (e) => {
@@ -726,7 +773,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                             <p className="text-slate-400 text-xs font-bold mt-1 tracking-widest">Kontingen {regency}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 p-2.5 rounded-full transition-all">&times;</button>
+                    <button onClick={handleCancelModal} className="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 p-2.5 rounded-full transition-all">&times;</button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden relative z-10">
@@ -909,7 +956,7 @@ function AddPesertaModal({ regency, initialData, onClose, onSave }) {
                     </div>
                     
                     <div className="p-8 flex justify-end gap-4 border-t border-white/10 bg-white/5 backdrop-blur-xl shrink-0 relative z-10">
-                        <button type="button" onClick={onClose} disabled={isSaving} className="px-8 py-3.5 text-slate-300 font-bold hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10 rounded-xl transition-all disabled:opacity-50 text-sm tracking-widest uppercase">
+                        <button type="button" onClick={handleCancelModal} disabled={isSaving} className="px-8 py-3.5 text-slate-300 font-bold hover:bg-white/10 hover:text-white border border-transparent hover:border-white/10 rounded-xl transition-all disabled:opacity-50 text-sm tracking-widest uppercase">
                             {isReadOnly ? 'Tutup Detail' : 'Batal'}
                         </button>
                         {!isReadOnly && !showDraftConfirm && (
